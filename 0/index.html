@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Project 0: Becoming Friends with Your Camera</title>
+    <style>
+        :root {
+            --bg: #faf8f5;
+            --text: #1f1c19;
+            --muted: #6b6660;
+            --accent: #b5482c;
+            --card-bg: #ffffff;
+            --border: #e7e2da;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: Georgia, 'Times New Roman', serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        header {
+            padding: 60px 20px 40px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+        header h1 {
+            font-size: 2.2rem;
+            margin: 0 0 8px;
+            letter-spacing: -0.5px;
+        }
+        header p {
+            color: var(--muted);
+            margin: 4px 0;
+            font-size: 1rem;
+        }
+        header a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 24px 100px;
+        }
+        section {
+            margin-bottom: 72px;
+        }
+        section h2 {
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--accent);
+            display: inline-block;
+            padding-bottom: 4px;
+            margin-bottom: 12px;
+        }
+        .side-by-side {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        figure {
+            margin: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        figure img {
+            display: block;
+            width: 100%;
+            height: 380px;
+            object-fit: cover;
+            object-position: center top;
+        }
+        figcaption {
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            color: var(--muted);
+            text-align: center;
+        }
+        .single-figure {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            max-width: 420px;
+            margin: 0 auto;
+        }
+        .single-figure img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+        .explain {
+            max-width: 720px;
+            margin: 20px auto 0;
+        }
+        .explain p {
+            margin: 0 0 12px;
+        }
+        .explain p:last-child {
+            margin-bottom: 0;
+        }
+        @media (max-width: 700px) {
+            .side-by-side { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Becoming Friends with Your Camera</h1>
+        <p>CS180 &middot; Project 0</p>
+        <p><a href="../index.html">&larr; Back to portfolio</a></p>
+    </header>
+
+    <main>
+        <section id="part1">
+            <h2>Part 1: Selfie &mdash; The Wrong Way vs. The Right Way</h2>
+            <div class="side-by-side">
+                <figure>
+                    <img src="media/p1_1.jpg" alt="Close-up selfie taken a few inches from the face, showing wide-angle distortion">
+                    <figcaption>The Wrong Way</figcaption>
+                </figure>
+                <figure>
+                    <img src="media/p1_2.jpg" alt="Portrait taken several feet back and zoomed in to match the same framing">
+                    <figcaption>The Right Way</figcaption>
+                </figure>
+            </div>
+            <div class="explain">
+                <p>In the close-up photo, the nose appears larger relative to the rest of the face, and the ears and jawline look compressed. In the photo taken from farther away and zoomed in to match the framing, the face looks proportional.</p>
+                <p>Magnification depends on distance from the camera. Up close, the nose is much closer to the camera than the ears, so it gets magnified more. Farther away, that same difference in distance is small relative to the total distance, so the nose and ears are magnified almost equally.</p>
+            </div>
+        </section>
+
+        <section id="part2">
+            <h2>Part 2: Architectural Perspective Compression</h2>
+            <div class="side-by-side">
+                <figure>
+                    <img src="media/p2_far.jpg" alt="Building photographed from far away and zoomed in, showing a flattened, compressed facade">
+                    <figcaption>Zoomed In From Afar</figcaption>
+                </figure>
+                <figure>
+                    <img src="media/p2_close.jpg" alt="Building photographed up close with no zoom, showing distorted converging lines">
+                    <figcaption>Walked Up Close</figcaption>
+                </figure>
+            </div>
+            <div class="explain">
+                <p>In the close photo, the near corner of the building appears large and the lines on the front of the building converge sharply toward the far edge. In the photo taken from farther away and zoomed in to match the framing, the front of the building looks flatter, with the lines closer to parallel.</p>
+                <p>Up close, the near corner is much closer to the camera than the far edge, so it gets magnified more. Farther away, that difference in distance is small relative to the total distance, so the front of the building is magnified evenly.</p>
+            </div>
+        </section>
+
+        <section id="part3">
+            <h2>Part 3: The Dolly Zoom</h2>
+            <div class="single-figure">
+                <img src="media/p3_dollyzoom.gif" alt="Animated GIF of a dolly zoom effect, subject staying constant size while background perspective shifts">
+            </div>
+            <div class="explain">
+                <p>Moving the camera back and zooming in keeps the subject the same size, but the background is much farther away, so it barely shrinks from moving back while the zoom still magnifies it fully. This causes the subject to stay fixed while the background appears to expand and shift around it.</p>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
