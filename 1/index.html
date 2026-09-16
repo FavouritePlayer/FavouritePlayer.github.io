@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Images of the Russian Empire</title>
+  <style>
+    :root {
+      --bg: #faf8f5;
+      --text: #1f1c19;
+      --muted: #6b6660;
+      --accent: #b5482c;
+      --card-bg: #ffffff;
+      --border: #e7e2da;
+      --placeholder-bg: #fff4e5;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+
+    header {
+      padding: 60px 20px 40px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      margin: 0 0 8px;
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      color: var(--muted);
+      margin: 4px 0;
+      font-size: 1rem;
+    }
+
+    header a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 24px 40px;
+    }
+
+    section {
+      margin-bottom: 72px;
+    }
+
+    section h2 {
+      font-size: 1.5rem;
+      border-bottom: 2px solid var(--accent);
+      display: inline-block;
+      padding-bottom: 4px;
+      margin-bottom: 12px;
+    }
+
+    .placeholder {
+      background: var(--placeholder-bg);
+      border: 2px dashed var(--accent);
+      border-radius: 8px;
+      color: var(--accent);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.95rem;
+      font-weight: bold;
+      letter-spacing: 0.02em;
+      margin: 16px 0 28px;
+      padding: 28px 20px;
+      text-align: center;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    figure {
+      margin: 0;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    figcaption {
+      padding: 10px 16px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    figcaption .filename {
+      color: var(--text);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .single-figure {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      max-width: 720px;
+      margin: 0 auto 28px;
+    }
+
+    .single-figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.95rem;
+      padding: 28px 24px 60px;
+      text-align: center;
+    }
+
+    @media (max-width: 700px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Images of the Russian Empire</h1>
+    <p>Colorizing the Prokudin-Gorskii photo collection · CS180 Project 1 · Arjun Nanduri</p>
+    <p><a href="../index.html">&larr; Back to portfolio</a></p>
+  </header>
+
+  <main>
+    <section>
+      <div class="placeholder">[PLACEHOLDER SECTION INTRO]</div>
+    </section>
+
+    <section>
+      <h2>Single-Scale Alignment (NCC)</h2>
+      <div class="placeholder">[PLACEHOLDER SECTION NCC]</div>
+      <div class="grid">
+        <figure>
+          <img src="out_path/out_cathedral.jpg" alt="out_cathedral.jpg">
+          <figcaption>
+            <span class="filename">out_cathedral.jpg</span>
+            green (2, 5) · red (3, 12) · 0.41s
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out_path/out_monastery.jpg" alt="out_monastery.jpg">
+          <figcaption>
+            <span class="filename">out_monastery.jpg</span>
+            green (2, -3) · red (2, 3) · 0.35s
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out_path/out_tobolsk.jpg" alt="out_tobolsk.jpg">
+          <figcaption>
+            <span class="filename">out_tobolsk.jpg</span>
+            green (3, 3) · red (3, 6) · 0.34s
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>Multi-Scale Pyramid Alignment</h2>
+      <div class="placeholder">[PLACEHOLDER SECTION PYRAMID]</div>
+      <div class="grid">
+        <figure>
+          <img src="out_path/out_church.jpg" alt="out_church.jpg">
+          <figcaption>
+            <span class="filename">out_church.jpg</span>
+            green (4, 25) · red (-4, 58) · 3.84s
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out_path/out_harvesters.jpg" alt="out_harvesters.jpg">
+          <figcaption>
+            <span class="filename">out_harvesters.jpg</span>
+            green (17, 60) · red (13, 124) · 3.65s
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out_path/out_icon.jpg" alt="out_icon.jpg">
+          <figcaption>
+            <span class="filename">out_icon.jpg</span>
+            green (17, 41) · red (23, 89) · 3.73s
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out_path/out_ilemselga.jpg" alt="out_ilemselga.jpg">
+          <figcaption>
+            <span class="filename">out_ilemselga.jpg</span>
+            green (7, 40) · red (11, 130) · 3.86s
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out_path/out_melons.jpg" alt="out_melons.jpg">
+          <figcaption>
+            <span class="filename">out_melons.jpg</span>
+            green (11, 82) · red (13, 178) · 3.61s
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out_path/out_religous_painting.jpg" alt="out_religous_painting.jpg">
+          <figcaption>
+            <span class="filename">out_religous_painting.jpg</span>
+            green (3, 28) · red (7, 68) · 4.26s
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out_path/out_self_portrait.jpg" alt="out_self_portrait.jpg">
+          <figcaption>
+            <span class="filename">out_self_portrait.jpg</span>
+            green (29, 79) · red (37, 176) · 4.27s
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out_path/out_siren.jpg" alt="out_siren.jpg">
+          <figcaption>
+            <span class="filename">out_siren.jpg</span>
+            green (-6, 49) · red (-25, 96) · 3.88s
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out_path/out_three_generations.jpg" alt="out_three_generations.jpg">
+          <figcaption>
+            <span class="filename">out_three_generations.jpg</span>
+            green (14, 53) · red (11, 112) · 3.50s
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out_path/out_wharf.jpg" alt="out_wharf.jpg">
+          <figcaption>
+            <span class="filename">out_wharf.jpg</span>
+            green (-7, 15) · red (-16, 83) · 3.75s
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>Failure Case: Emir of Bukhara</h2>
+      <figure class="single-figure">
+        <img src="out_path/out_emir.jpg" alt="out_emir.jpg">
+        <figcaption>
+          <span class="filename">out_emir.jpg</span>
+          green (24, 49) · red (-205, 141) · 3.66s
+        </figcaption>
+      </figure>
+      <div class="placeholder">[PLACEHOLDER SECTION EMIR]</div>
+    </section>
+
+    <section>
+      <h2>Additional Images from the Library of Congress</h2>
+      <div class="placeholder">[PLACEHOLDER SECTION LIBRARY OF CONGRESS]</div>
+      <div class="grid">
+        <figure>
+          <img src="out_path/out_kurmy.jpg" alt="out_kurmy.jpg">
+          <figcaption>
+            <span class="filename">out_kurmy.jpg</span>
+            green (-18, 25) · red (-38, 116) · 3.82s
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out_path/out_train.jpg" alt="out_train.jpg">
+          <figcaption>
+            <span class="filename">out_train.jpg</span>
+            green (6, 43) · red (32, 87) · 3.61s
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out_path/out_napoleon.jpg" alt="out_napoleon.jpg">
+          <figcaption>
+            <span class="filename">out_napoleon.jpg</span>
+            green (5, 63) · red (-2, 133) · 3.77s
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    All displacements are reported as (x, y), i.e. (column, row).
+  </footer>
+</body>
+</html>
