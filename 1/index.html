@@ -198,9 +198,6 @@
           </figcaption>
         </figure>
       </div>
-      <div class="explain">
-        <p>Because the low resolution JPEGs are already 341px tall, they hit this base case immediately, meaning the pyramid reduces to plain single scale NCC on them and produces the exact same offsets reported in the section above.</p>
-      </div>
     </section>
 
     <section>
@@ -208,10 +205,32 @@
       <div class="explain">
         <p>To motivate the use of Pyramid Alignment, we must consider what happens if we consider photos with a far larger number of pixels. With a far larger number of pixels, the misalignment factors between them grow and our search window can no longer be reasonably constrained to [-15, 15] on both axes. Given that the area of a square is s^2, the number of shifts we must try is increasing in O(R^2) in the search radius R, and each individual shift costs O(N^2) to score since the NCC sums over every pixel, not to mention the vector operations required for each pass. We need some way to reduce the number of rolls we do to accommodate the use cases for larger and larger images.</p>
         <p>Introducing... Pyramid Alignment! The idea is simple, using downsampling, we take a large image (denote it as level 0 for now), and decrease its size for every consecutive level (in this example, a factor of 2). As such, with an image of size NxN at level 0, at level 1 we would have an image of size N/2xN/2, at level 2 an image of size N/4xN/4 and so on. At the top of the pyramid would be the simple base case in the Single Scale Alignment problem. After testing, the height of the smaller low resolution images was at 341px, so for this procedure I arbitrarily set level generation to terminate when a given image's height is smaller than 350px.</p>
+        <p>Because the low resolution JPEGs are already 341px tall, they hit this base case immediately, meaning the pyramid reduces to plain single scale NCC on them and produces the exact same offsets reported in the section above.</p>
         <p>From there, we use recursion in our algorithm. Starting from the highest level which uses traditional NCC with shifts of [-15, 15] on each axis, each lower level multiplies the resolved directional vector by 2 to counteract the scaling of downsampling, and uses a modified NCC now centered around the new directional vector with shifts of [-2, 2] on each axis, returning the final displacement vector and chaining all the way down to the bottom. Limiting each level to shifts of [-2, 2] for each axis is important because it ensures that for images that are ~geometric(2) in pixel size and thus have many levels, only 25 rolls are checked per level.</p>
-        <p>After completing this process for 10 further images, the following results are generated:</p>
+        <p>After completing this process for 13 images, the following results are generated:</p>
       </div>
       <div class="grid">
+        <figure>
+          <img src="out_path/out_cathedral.jpg" alt="out_cathedral.jpg">
+          <figcaption>
+            <span class="filename">out_cathedral.jpg</span>
+            green (2, 5) · red (3, 12) · 0.41s
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out_path/out_monastery.jpg" alt="out_monastery.jpg">
+          <figcaption>
+            <span class="filename">out_monastery.jpg</span>
+            green (2, -3) · red (2, 3) · 0.35s
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out_path/out_tobolsk.jpg" alt="out_tobolsk.jpg">
+          <figcaption>
+            <span class="filename">out_tobolsk.jpg</span>
+            green (3, 3) · red (3, 6) · 0.34s
+          </figcaption>
+        </figure>
         <figure>
           <img src="out_path/out_church.jpg" alt="out_church.jpg">
           <figcaption>
