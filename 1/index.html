@@ -12,7 +12,6 @@
       --accent: #b5482c;
       --card-bg: #ffffff;
       --border: #e7e2da;
-      --placeholder-bg: #fff4e5;
     }
 
     * { box-sizing: border-box; }
@@ -67,18 +66,26 @@
       margin-bottom: 12px;
     }
 
-    .placeholder {
-      background: var(--placeholder-bg);
-      border: 2px dashed var(--accent);
-      border-radius: 8px;
-      color: var(--accent);
+    .explain {
+      margin: 0 0 28px;
+    }
+
+    .grid + .explain {
+      margin-top: 28px;
+    }
+
+    .explain p {
+      margin: 0 0 14px;
+    }
+
+    .explain p:last-child {
+      margin-bottom: 0;
+    }
+
+    .explain code {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 0.95rem;
-      font-weight: bold;
-      letter-spacing: 0.02em;
-      margin: 16px 0 28px;
-      padding: 28px 20px;
-      text-align: center;
+      font-size: 0.88em;
+      word-break: break-word;
     }
 
     .grid {
@@ -151,12 +158,23 @@
 
   <main>
     <section>
-      <div class="placeholder">[PLACEHOLDER SECTION INTRO]</div>
+      <div class="explain">
+        <p>In 1907, Sergei Mikhailovich Prokudin-Gorskii (long name, I know), went on a journey around Russia taking color photos of the Russian Empire, before color photography even existed. How did he do it? Convinced that color photography was the future, Sergei utilized glass plates to record three different exposures of the same scenery with red, blue, and green filters respectively. At the time, there was no way to recombine them, but Sergei imagined a projector device that could display the finalized image in classrooms. Sadly, due to the revolution, he never got to finish his work.</p>
+        <p>But thankfully, Arjun Nanduri is here to save the day with a project that carefully recombines 17 of these images (14 provided, plus 3 I picked out myself) through the use of innovative techniques such as NCC and Image Pyramids! Let's get started!</p>
+      </div>
     </section>
 
     <section>
       <h2>Single-Scale Alignment (NCC)</h2>
-      <div class="placeholder">[PLACEHOLDER SECTION NCC]</div>
+      <div class="explain">
+        <p>To motivate the use of NCC, please first understand that the three glass recordings are all misaligned. Although, in an ideal world, we should be able to directly stack them, due to human factors and simply the nature of time itself, the recordings have become shifted, thus requiring us to recombine them in a proper fashion. By how much are they misaligned? Given that the number of pixels in these low resolution images is not particularly large, we offer ourselves a search window of 15 pixels on both axes.</p>
+        <p>To start this step, we first take the raw input image and separate them into the three color channels of blue, green, and red. Then, to align the images, we must hold one constant and shift the other two into position. For this project, we hold the blue image still and shift the red and green images by a directional vector. Precisely, we use np.roll() for this, which wraps the image back around in both directions. One last thing to take note of is the influence of the borders. Because the borders can influence our alignment process, we need to simply exclude them. There are two ways to do this, either you manually identify a section of thick white lining leading up to a black margin around each image and crop it directly, or you simply constrict your alignment process to exclude the border by removing a margin, 10% from all directions in my case, and align using the inside formed rectangle only. Using a percentage instead of a fixed pixel count is easier because it auto-adjusts for non-square images, taking the same amount of the top and bottom, and a different amount off the left and right. It also guarantees that the margin is always bigger than the largest shift we search, which matters because np.roll wraps, and it behaves the same way at every level of the image pyramid, where a fixed pixel count would wipe out a small image entirely.</p>
+        <p>So how exactly do we align the image? Introducing... Normalized Cross-Correlation! Normalized Cross-Correlation is defined as the dot product of two mean-subtracted, normalized vectors.</p>
+        <p><code>((image1-mean(image1))./||image1-mean(image1)|| and (image2-mean(image2))./||image2-mean(image2)||)</code></p>
+        <p>The value of the dot product is equal to the cosine of the angle between the two vectors, and is bounded from [-1, 1] because of the normalization. In other words, a NCC of 1 implies absolute similarity while a NCC of -1 means it is perfectly inverted, bright where the other one is dark. 0, on the other hand means that it is not correlated at all, and the vectors are orthogonal.</p>
+        <p>In the code, we begin the process by shifting the green and red images by every displacement in the range [-15, 15] on both axes, which is 961 shifts in total. After doing this, we find the displacement vector such that shifting the green and red images by the displacement vector produces the largest NCC value, and that is the shift we apply.</p>
+        <p>After completing this process for the three images below, we get the following results.</p>
+      </div>
       <div class="grid">
         <figure>
           <img src="out_path/out_cathedral.jpg" alt="out_cathedral.jpg">
@@ -180,11 +198,19 @@
           </figcaption>
         </figure>
       </div>
+      <div class="explain">
+        <p>Because the low resolution JPEGs are already 341px tall, they hit this base case immediately, meaning the pyramid reduces to plain single scale NCC on them and produces the exact same offsets reported in the section above.</p>
+      </div>
     </section>
 
     <section>
       <h2>Multi-Scale Pyramid Alignment</h2>
-      <div class="placeholder">[PLACEHOLDER SECTION PYRAMID]</div>
+      <div class="explain">
+        <p>To motivate the use of Pyramid Alignment, we must consider what happens if we consider photos with a far larger number of pixels. With a far larger number of pixels, the misalignment factors between them grow and our search window can no longer be reasonably constrained to [-15, 15] on both axes. Given that the area of a square is s^2, the number of shifts we must try is increasing in O(R^2) in the search radius R, and each individual shift costs O(N^2) to score since the NCC sums over every pixel, not to mention the vector operations required for each pass. We need some way to reduce the number of rolls we do to accommodate the use cases for larger and larger images.</p>
+        <p>Introducing... Pyramid Alignment! The idea is simple, using downsampling, we take a large image (denote it as level 0 for now), and decrease its size for every consecutive level (in this example, a factor of 2). As such, with an image of size NxN at level 0, at level 1 we would have an image of size N/2xN/2, at level 2 an image of size N/4xN/4 and so on. At the top of the pyramid would be the simple base case in the Single Scale Alignment problem. After testing, the height of the smaller low resolution images was at 341px, so for this procedure I arbitrarily set level generation to terminate when a given image's height is smaller than 350px.</p>
+        <p>From there, we use recursion in our algorithm. Starting from the highest level which uses traditional NCC with shifts of [-15, 15] on each axis, each lower level multiplies the resolved directional vector by 2 to counteract the scaling of downsampling, and uses a modified NCC now centered around the new directional vector with shifts of [-2, 2] on each axis, returning the final displacement vector and chaining all the way down to the bottom. Limiting each level to shifts of [-2, 2] for each axis is important because it ensures that for images that are ~geometric(2) in pixel size and thus have many levels, only 25 rolls are checked per level.</p>
+        <p>After completing this process for 10 further images, the following results are generated:</p>
+      </div>
       <div class="grid">
         <figure>
           <img src="out_path/out_church.jpg" alt="out_church.jpg">
@@ -268,12 +294,17 @@
           green (24, 49) · red (-205, 141) · 3.66s
         </figcaption>
       </figure>
-      <div class="placeholder">[PLACEHOLDER SECTION EMIR]</div>
+      <div class="explain">
+        <p>One unfortunate consequence of this process is the blatant misalignment in the photo of the Emir of Bukhara. The reason for this is actually pretty clear. The 3 images to be matched do not have the same brightness values. The brightness of the blue of his robe leads the blue image to be extremely bright whereas the red image becomes dark, causing an error.</p>
+        <p>To fix this issue, the images can instead be aligned using gradients or edge maps rather than raw pixel intensities. Using the Sobel operator, which convolves the image with a small pair of kernels to approximate the horizontal and vertical derivatives, would give us an edge map for each plate to match on instead. Using this method, irrespective of whether one channel is brighter than usual and another is darker than usual, the same edge is detected, solving this issue.</p>
+      </div>
     </section>
 
     <section>
       <h2>Additional Images from the Library of Congress</h2>
-      <div class="placeholder">[PLACEHOLDER SECTION LIBRARY OF CONGRESS]</div>
+      <div class="explain">
+        <p>Here are three additional images downloaded from the Library of Congress to further show Pyramid Alignment in work. The images were chosen purely out of curiosity for the final result. The image of the kurmy displays the pink, green, and orange colors of the fabric extremely well. The picture of the train also properly depicts the red hues of the wheel rims and the darkness of the train itself. Of special interest to note is the cracked line appearing in the napoleon photo. The crack itself seems to be actually on the glass plates and its different colors and distinct pattern show that the alignment process preserved it too in the final image.</p>
+      </div>
       <div class="grid">
         <figure>
           <img src="out_path/out_kurmy.jpg" alt="out_kurmy.jpg">
