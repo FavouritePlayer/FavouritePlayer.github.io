@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fun with Filters and Frequencies</title>
+  <style>
+    :root {
+      --bg: #faf8f5;
+      --text: #1f1c19;
+      --muted: #6b6660;
+      --accent: #b5482c;
+      --card-bg: #ffffff;
+      --border: #e7e2da;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+
+    header {
+      padding: 60px 20px 40px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      margin: 0 0 8px;
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      color: var(--muted);
+      margin: 4px 0;
+      font-size: 1rem;
+    }
+
+    header a, .toc a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 24px 40px;
+    }
+
+    section {
+      margin-bottom: 72px;
+    }
+
+    section h2 {
+      font-size: 1.5rem;
+      border-bottom: 2px solid var(--accent);
+      display: inline-block;
+      padding-bottom: 4px;
+      margin-bottom: 12px;
+    }
+
+    section h3 {
+      font-size: 1.15rem;
+      margin: 32px 0 12px;
+    }
+
+    .explain {
+      margin: 0 0 28px;
+    }
+
+    .grid + .explain,
+    .single-figure + .explain {
+      margin-top: 28px;
+    }
+
+    .explain p {
+      margin: 0 0 14px;
+    }
+
+    .explain p:last-child {
+      margin-bottom: 0;
+    }
+
+    .explain code, p code, figcaption code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.88em;
+      word-break: break-word;
+    }
+
+    .writeup {
+      background: #fff4e5;
+      border-left: 4px solid var(--accent);
+      padding: 12px 16px;
+      margin: 0 0 16px;
+    }
+
+    .toc {
+      margin: 8px 0 0;
+      color: var(--muted);
+    }
+
+    pre {
+      background: #1f1c19;
+      color: #faf8f5;
+      padding: 16px 18px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      margin: 0 0 28px;
+    }
+
+    pre code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+    figure {
+      margin: 0;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #eceae6;
+    }
+
+    figcaption {
+      padding: 10px 16px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    figcaption .filename {
+      color: var(--text);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .single-figure {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      max-width: 720px;
+      margin: 0 auto 28px;
+    }
+
+    .single-figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.95rem;
+      padding: 28px 24px 60px;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 700px) {
+      .grid, .grid.cols-2, .grid.cols-4 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Fun with Filters and Frequencies</h1>
+    <p>CS180 Project 2 · Arjun Nanduri</p>
+    <p><a href="../index.html">&larr; Back to portfolio</a></p>
+  </header>
+
+  <main>
+    <section>
+      <div class="explain">
+        <p class="writeup">[Delete this line before you submit. Every highlighted paragraph in square brackets is a writeup you still need to replace with your own words.]</p>
+        <p class="writeup">[Introduce the project in a few sentences. Say that you implemented convolutions, finite-difference edges, derivative-of-Gaussian filters, unsharp masking, hybrid images, and multiresolution blending, and that the figures below are your results.]</p>
+      </div>
+      <p class="toc">
+        <a href="#part1-1">1.1 Convolutions</a> ·
+        <a href="#part1-2">1.2 Finite differences</a> ·
+        <a href="#part1-3">1.3 Derivative of Gaussian</a> ·
+        <a href="#part2-1">2.1 Sharpening</a> ·
+        <a href="#part2-2">2.2 Hybrid images</a> ·
+        <a href="#part2-3">2.3 Stacks</a> ·
+        <a href="#part2-4">2.4 Blending</a> ·
+        <a href="#learned">What I learned</a>
+      </p>
+    </section>
+
+    <section id="part1-1">
+      <h2>Part 1.1: Convolutions from Scratch</h2>
+      <div class="explain">
+        <p class="writeup">[Explain the two numpy-only convolutions. Cover: four nested loops versus two loops with a vectorized inner product, flipping the filter before applying it, zero padding, and same-mode as a center crop of the full convolution. Compare both to <code>scipy.signal.convolve2d</code>. Fill in the runtimes you printed (milliseconds) for the 9×9 box, Dx, and Dy, and say how the borders are handled.]</p>
+      </div>
+      <pre><code>def getBox(k):
+    # kxk box filter, each entry is 1/k^2
+    box_filter = np.ones((k, k)) / (k * k)
+    return box_filter
+
+def convolve4(img, kernel, mode="same"):
+    # flip the kernel as required
+    kernel = kernel[::-1, ::-1]
+    kh, kw = kernel.shape
+    height, width = img.shape
+    output_height = height + kh - 1
+    output_width = width + kw - 1
+    output = np.zeros((output_height, output_width))
+    # pad kh - 1 and kw - 1 zeros on every side
+    img = np.pad(img, ((kh - 1, kh - 1), (kw - 1, kw - 1)), mode="constant", constant_values=0)
+    for i in range(output_height):
+        for j in range(output_width):
+            for ki in range(kh):
+                for kj in range(kw):
+                    output[i, j] += img[i + ki, j + kj] * kernel[ki, kj]
+    if mode == "full":
+        return output
+    top = (kh - 1) // 2
+    left = (kw - 1) // 2
+    return output[top:top + height, left:left + width]
+
+def convolve2(img, kernel, mode="same"):
+    kernel = kernel[::-1, ::-1]
+    kh, kw = kernel.shape
+    height, width = img.shape
+    output_height = height + kh - 1
+    output_width = width + kw - 1
+    output = np.zeros((output_height, output_width))
+    img = np.pad(img, ((kh - 1, kh - 1), (kw - 1, kw - 1)), mode="constant", constant_values=0)
+    for i in range(output_height):
+        for j in range(output_width):
+            window = img[i:i + kh, j:j + kw]
+            output[i, j] = np.sum(window * kernel)
+    if mode == "full":
+        return output
+    top = (kh - 1) // 2
+    left = (kw - 1) // 2
+    return output[top:top + height, left:left + width]</code></pre>
+      <p>The picture is <code>data/me.jpg</code>, read as grayscale. The box is 9×9. <code>Dx = [[1, -1]]</code> and <code>Dy = [[1], [-1]]</code>. Derivatives are rescaled to [0, 1] for display because they contain negative values. Every result below uses same-mode convolution.</p>
+      <figure class="single-figure">
+        <img src="out/part1_1/gray.jpg" alt="Grayscale selfie">
+        <figcaption>
+          <span class="filename">part1_1/gray.jpg</span>
+          grayscale input
+        </figcaption>
+      </figure>
+      <h3>9×9 box filter</h3>
+      <div class="grid">
+        <figure>
+          <img src="out/part1_1/4_for_loop_box.jpg" alt="Four-loop box blur">
+          <figcaption>
+            <span class="filename">4_for_loop_box.jpg</span>
+            four for-loops
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part1_1/2_for_loop_box.jpg" alt="Two-loop box blur">
+          <figcaption>
+            <span class="filename">2_for_loop_box.jpg</span>
+            two for-loops
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part1_1/scipy_baseline_box.jpg" alt="SciPy box blur">
+          <figcaption>
+            <span class="filename">scipy_baseline_box.jpg</span>
+            scipy.signal.convolve2d
+          </figcaption>
+        </figure>
+      </div>
+      <h3>Partial derivative in x</h3>
+      <div class="grid">
+        <figure>
+          <img src="out/part1_1/4_for_loop_dx.jpg" alt="Four-loop Dx">
+          <figcaption>
+            <span class="filename">4_for_loop_dx.jpg</span>
+            four for-loops · Dx
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part1_1/2_for_loop_dx.jpg" alt="Two-loop Dx">
+          <figcaption>
+            <span class="filename">2_for_loop_dx.jpg</span>
+            two for-loops · Dx
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part1_1/scipy_baseline_dx.jpg" alt="SciPy Dx">
+          <figcaption>
+            <span class="filename">scipy_baseline_dx.jpg</span>
+            scipy.signal.convolve2d · Dx
+          </figcaption>
+        </figure>
+      </div>
+      <h3>Partial derivative in y</h3>
+      <div class="grid">
+        <figure>
+          <img src="out/part1_1/4_for_loop_dy.jpg" alt="Four-loop Dy">
+          <figcaption>
+            <span class="filename">4_for_loop_dy.jpg</span>
+            four for-loops · Dy
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part1_1/2_for_loop_dy.jpg" alt="Two-loop Dy">
+          <figcaption>
+            <span class="filename">2_for_loop_dy.jpg</span>
+            two for-loops · Dy
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part1_1/scipy_baseline_dy.jpg" alt="SciPy Dy">
+          <figcaption>
+            <span class="filename">scipy_baseline_dy.jpg</span>
+            scipy.signal.convolve2d · Dy
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="part1-2">
+      <h2>Part 1.2: Finite Difference Operator</h2>
+      <div class="explain">
+        <p>Cameraman, convolved with <code>scipy.signal.convolve2d</code> in same mode. Gradient magnitude is <code>sqrt(dx² + dy²)</code>. An edge pixel is wherever that magnitude is above a threshold.</p>
+        <p class="writeup">[Justify the threshold you kept. The code tries 0.20, 0.25, 0.30, 0.35, and 0.40, and the comment says 0.30 looked best. Describe the tradeoff you accepted between keeping real edges and suppressing noise, and why the neighbors were worse.]</p>
+      </div>
+      <figure class="single-figure">
+        <img src="data/cameraman.png" alt="Cameraman">
+        <figcaption>
+          <span class="filename">data/cameraman.png</span>
+          original
+        </figcaption>
+      </figure>
+      <div class="grid">
+        <figure>
+          <img src="out/part1_2/dx.jpg" alt="Cameraman partial x">
+          <figcaption>
+            <span class="filename">dx.jpg</span>
+            ∂I/∂x, rescaled to [0, 1]
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part1_2/dy.jpg" alt="Cameraman partial y">
+          <figcaption>
+            <span class="filename">dy.jpg</span>
+            ∂I/∂y, rescaled to [0, 1]
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part1_2/gradient_magnitude.jpg" alt="Gradient magnitude">
+          <figcaption>
+            <span class="filename">gradient_magnitude.jpg</span>
+            gradient magnitude
+          </figcaption>
+        </figure>
+      </div>
+      <h3>Binarized edges</h3>
+      <div class="grid">
+        <figure>
+          <img src="out/part1_2/0_edges_t=0.2.jpg" alt="Edges at 0.2">
+          <figcaption>
+            <span class="filename">0_edges_t=0.2.jpg</span>
+            threshold 0.20
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part1_2/1_edges_t=0.25.jpg" alt="Edges at 0.25">
+          <figcaption>
+            <span class="filename">1_edges_t=0.25.jpg</span>
+            threshold 0.25
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part1_2/2_edges_t=0.3.jpg" alt="Edges at 0.3">
+          <figcaption>
+            <span class="filename">2_edges_t=0.3.jpg</span>
+            threshold 0.30, the one kept in the code
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part1_2/3_edges_t=0.35.jpg" alt="Edges at 0.35">
+          <figcaption>
+            <span class="filename">3_edges_t=0.35.jpg</span>
+            threshold 0.35
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part1_2/4_edges_t=0.4.jpg" alt="Edges at 0.4">
+          <figcaption>
+            <span class="filename">4_edges_t=0.4.jpg</span>
+            threshold 0.40
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="part1-3">
+      <h2>Part 1.3: Derivative of Gaussian (DoG) Filter</h2>
+      <div class="explain">
+        <p>The Gaussian is a 13×13 kernel, σ = 2, from <code>cv2.getGaussianKernel</code> outer-producted with its transpose. The DoG filters are that Gaussian convolved in full mode with Dx and Dy, so the kernels are 13×14 and 14×13. They are enlarged 20× so the kernel itself is visible.</p>
+        <p class="writeup">[Compare these edges with Part 1.2. What changed after Gaussian smoothing, and why? Then say how a single DoG convolution relates to blurring first and differentiating second. The check in the code: max absolute difference is about 1.3×10⁻¹⁵ in x, 1.4×10⁻¹⁵ in y, and 1.9×10⁻¹⁵ in gradient magnitude, and the t = 0.08 edge images differ in 0 pixels.]</p>
+      </div>
+      <pre><code>ksize = 13
+G = cv2.getGaussianKernel(ksize=ksize, sigma=2)
+G = G @ G.T
+# full mode so the derivative filter is not cropped
+Gdx_kernel = scipy.signal.convolve2d(G, Dx, mode="full")
+Gdy_kernel = scipy.signal.convolve2d(G, Dy, mode="full")</code></pre>
+      <h3>Blur, then finite differences</h3>
+      <div class="grid">
+        <figure>
+          <img src="out/part1_3/gaussian_blur.jpg" alt="Gaussian blur of cameraman">
+          <figcaption>
+            <span class="filename">gaussian_blur.jpg</span>
+            cameraman ∗ G, σ = 2
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part1_3/gaussian_dx.jpg" alt="Blurred partial x">
+          <figcaption>
+            <span class="filename">gaussian_dx.jpg</span>
+            blurred, then Dx
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part1_3/gaussian_dy.jpg" alt="Blurred partial y">
+          <figcaption>
+            <span class="filename">gaussian_dy.jpg</span>
+            blurred, then Dy
+          </figcaption>
+        </figure>
+      </div>
+      <div class="grid cols-2">
+        <figure>
+          <img src="out/part1_3/gaussian_gradient_magnitude.jpg" alt="Smoothed gradient magnitude">
+          <figcaption>
+            <span class="filename">gaussian_gradient_magnitude.jpg</span>
+            gradient magnitude after blur
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part1_3/0_gaussian_edges_t=0.08.jpg" alt="Smoothed edges at 0.08">
+          <figcaption>
+            <span class="filename">0_gaussian_edges_t=0.08.jpg</span>
+            binarized at 0.08
+          </figcaption>
+        </figure>
+      </div>
+      <h3>Derivative-of-Gaussian filters</h3>
+      <div class="grid cols-2">
+        <figure>
+          <img src="out/part1_3/dog_dx_filter.jpg" alt="DoG x filter">
+          <figcaption>
+            <span class="filename">dog_dx_filter.jpg</span>
+            DoG<sub>x</sub>, enlarged 20×
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part1_3/dog_dy_filter.jpg" alt="DoG y filter">
+          <figcaption>
+            <span class="filename">dog_dy_filter.jpg</span>
+            DoG<sub>y</sub>, enlarged 20×
+          </figcaption>
+        </figure>
+      </div>
+      <h3>One convolution with the DoG filters</h3>
+      <div class="grid">
+        <figure>
+          <img src="out/part1_3/dog_dx.jpg" alt="DoG x response">
+          <figcaption>
+            <span class="filename">dog_dx.jpg</span>
+            cameraman ∗ DoG<sub>x</sub>
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part1_3/dog_dy.jpg" alt="DoG y response">
+          <figcaption>
+            <span class="filename">dog_dy.jpg</span>
+            cameraman ∗ DoG<sub>y</sub>
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part1_3/dog_gradient_magnitude.jpg" alt="DoG gradient magnitude">
+          <figcaption>
+            <span class="filename">dog_gradient_magnitude.jpg</span>
+            DoG gradient magnitude
+          </figcaption>
+        </figure>
+      </div>
+      <figure class="single-figure">
+        <img src="out/part1_3/0_dog_edges_t=0.08.jpg" alt="DoG edges at 0.08">
+        <figcaption>
+          <span class="filename">0_dog_edges_t=0.08.jpg</span>
+          DoG edges, binarized at 0.08
+        </figcaption>
+      </figure>
+      <h3>Bells and Whistles (optional for CS180)</h3>
+      <div class="explain">
+        <p class="writeup">[Optional extra credit. There is no orientation figure in the current outputs. If you add it: compute gradient orientations for the cameraman without a built-in angle function, show them with hue or a cyclic colormap, and explain the process.]</p>
+      </div>
+    </section>
+
+    <section id="part2-1">
+      <h2>Part 2.1: Image Sharpening</h2>
+      <div class="explain">
+        <p>Blur uses the same 13×13 Gaussian, σ = 2. High frequency is the image minus its blur. The unsharp mask is one filter, <code>(1 + a) · impulse − a · G</code>, applied per color channel with symmetric boundary conditions. <code>a</code> is how much of the high-frequency image is added back.</p>
+        <p class="writeup">[Explain unsharp masking in terms of the Gaussian low-pass and the high frequencies you add back. For the Taj Mahal and the crocodile, say what changes as <code>a</code> goes from 1 to 5. For the sharp portrait (tung), say what happens when you blur it and sharpen the blur, and how close <code>a = 1, 2, 3</code> get to the original.]</p>
+      </div>
+      <pre><code># f + a (f - f ∗ G) = f ∗ [(1 + a) · unit - a · G]
+unit = np.zeros_like(G)
+unit[6][6] = 1
+unsharp_mask = lambda a: (1 + a) * unit - a * G</code></pre>
+
+      <h3>Taj Mahal</h3>
+      <div class="grid">
+        <figure>
+          <img src="data/taj.jpg" alt="Taj Mahal original">
+          <figcaption>
+            <span class="filename">data/taj.jpg</span>
+            original
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_1/taj_blur.jpg" alt="Taj Mahal blurred">
+          <figcaption>
+            <span class="filename">taj_blur.jpg</span>
+            Gaussian blur, σ = 2
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_1/taj_high_freq.jpg" alt="Taj Mahal high frequencies">
+          <figcaption>
+            <span class="filename">taj_high_freq.jpg</span>
+            high frequency, rescaled
+          </figcaption>
+        </figure>
+      </div>
+      <div class="grid cols-4">
+        <figure>
+          <img src="out/part2_1/taj_sharp_a=1.jpg" alt="Taj sharpened a=1">
+          <figcaption>
+            <span class="filename">taj_sharp_a=1.jpg</span>
+            sharpened, a = 1
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_1/taj_sharp_a=2.jpg" alt="Taj sharpened a=2">
+          <figcaption>
+            <span class="filename">taj_sharp_a=2.jpg</span>
+            sharpened, a = 2
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_1/taj_sharp_a=3.jpg" alt="Taj sharpened a=3">
+          <figcaption>
+            <span class="filename">taj_sharp_a=3.jpg</span>
+            sharpened, a = 3
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_1/taj_sharp_a=5.jpg" alt="Taj sharpened a=5">
+          <figcaption>
+            <span class="filename">taj_sharp_a=5.jpg</span>
+            sharpened, a = 5
+          </figcaption>
+        </figure>
+      </div>
+
+      <h3>Crocodile</h3>
+      <div class="grid">
+        <figure>
+          <img src="data/croc.jpg" alt="Crocodile original">
+          <figcaption>
+            <span class="filename">data/croc.jpg</span>
+            original
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_1/croc_blur.jpg" alt="Crocodile blurred">
+          <figcaption>
+            <span class="filename">croc_blur.jpg</span>
+            Gaussian blur, σ = 2
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_1/croc_high_freq.jpg" alt="Crocodile high frequencies">
+          <figcaption>
+            <span class="filename">croc_high_freq.jpg</span>
+            high frequency, rescaled
+          </figcaption>
+        </figure>
+      </div>
+      <div class="grid cols-4">
+        <figure>
+          <img src="out/part2_1/croc_sharp_a=1.jpg" alt="Crocodile sharpened a=1">
+          <figcaption>
+            <span class="filename">croc_sharp_a=1.jpg</span>
+            sharpened, a = 1
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_1/croc_sharp_a=2.jpg" alt="Crocodile sharpened a=2">
+          <figcaption>
+            <span class="filename">croc_sharp_a=2.jpg</span>
+            sharpened, a = 2
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_1/croc_sharp_a=3.jpg" alt="Crocodile sharpened a=3">
+          <figcaption>
+            <span class="filename">croc_sharp_a=3.jpg</span>
+            sharpened, a = 3
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_1/croc_sharp_a=5.jpg" alt="Crocodile sharpened a=5">
+          <figcaption>
+            <span class="filename">croc_sharp_a=5.jpg</span>
+            sharpened, a = 5
+          </figcaption>
+        </figure>
+      </div>
+
+      <h3>Blur a sharp image, then sharpen it</h3>
+      <div class="grid">
+        <figure>
+          <img src="data/tung.jpg" alt="Sharp portrait original">
+          <figcaption>
+            <span class="filename">data/tung.jpg</span>
+            original sharp image
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_1/tung_blur.jpg" alt="Portrait blurred">
+          <figcaption>
+            <span class="filename">tung_blur.jpg</span>
+            blurred with σ = 2
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_1/tung_high_freq.jpg" alt="Portrait high frequencies">
+          <figcaption>
+            <span class="filename">tung_high_freq.jpg</span>
+            high frequency of the original, rescaled
+          </figcaption>
+        </figure>
+      </div>
+      <div class="grid">
+        <figure>
+          <img src="out/part2_1/tung_resharpened_a=1.jpg" alt="Resharpened a=1">
+          <figcaption>
+            <span class="filename">tung_resharpened_a=1.jpg</span>
+            blur, then unsharp mask, a = 1
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_1/tung_resharpened_a=2.jpg" alt="Resharpened a=2">
+          <figcaption>
+            <span class="filename">tung_resharpened_a=2.jpg</span>
+            blur, then unsharp mask, a = 2
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_1/tung_resharpened_a=3.jpg" alt="Resharpened a=3">
+          <figcaption>
+            <span class="filename">tung_resharpened_a=3.jpg</span>
+            blur, then unsharp mask, a = 3
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="part2-2">
+      <h2>Part 2.2: Hybrid Images</h2>
+      <div class="explain">
+        <p>Each pair is aligned by clicking correspondences, then resized to 500 pixels wide so the same σ means the same thing on every pair. The low-frequency image is convolved with a Gaussian. The high-frequency image is convolved with an impulse minus that Gaussian. The hybrid is the sum, clipped to [0, 1]. All three hybrids are in color.</p>
+        <p class="writeup">[For each hybrid, say which image is the low-frequency one and which is the high-frequency one, what you see up close versus far away, and how you picked the two cutoff sigmas. Derek is low-pass σ = 12 and Nutmeg is high-pass σ = 4. The potato is low-pass σ = 14 and the cake is high-pass σ = 4. The lion is low-pass σ = 12 and the tiger is high-pass σ = 3.]</p>
+      </div>
+      <pre><code>def gaussian(s):
+    ksize = 2 * int(np.ceil(3 * s)) + 1
+    G1D = cv2.getGaussianKernel(ksize=ksize, sigma=s)
+    return G1D @ G1D.T
+
+def laplacian(s):
+    G = gaussian(s)
+    unit = np.zeros_like(G)
+    unit[G.shape[0] // 2][G.shape[1] // 2] = 1
+    return unit - G
+
+low_part = conv_color(low, gaussian(low_s))
+high_part = conv_color(high, laplacian(high_s))
+hybrid = np.clip(low_part + high_part, 0, 1)</code></pre>
+
+      <h3>Derek and Nutmeg</h3>
+      <div class="grid">
+        <figure>
+          <img src="data/DerekPicture.jpg" alt="Derek">
+          <figcaption>
+            <span class="filename">DerekPicture.jpg</span>
+            low-frequency image, before alignment
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="data/nutmeg.jpg" alt="Nutmeg">
+          <figcaption>
+            <span class="filename">nutmeg.jpg</span>
+            high-frequency image, before alignment
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_2/derek_nutmeg_low=12_high=4.jpg" alt="Derek and Nutmeg hybrid">
+          <figcaption>
+            <span class="filename">derek_nutmeg_low=12_high=4.jpg</span>
+            color hybrid, low σ = 12, high σ = 4
+          </figcaption>
+        </figure>
+      </div>
+
+      <h3>Frequency analysis (Derek + Nutmeg)</h3>
+      <div class="explain">
+        <p>This walkthrough is the grayscale pair used for the Fourier figures. Each spectrum is <code>log |fftshift(fft2(image))|</code>, rescaled to [0, 1]. The color hybrid is the one in the row above.</p>
+        <p class="writeup">[Walk through this figure. Point at what the low-pass and high-pass spectra look like, why σ = 12 and σ = 4, and how the hybrid spectrum combines them. Also say why this analysis is grayscale while the hybrid above is color.]</p>
+      </div>
+      <div class="grid cols-2">
+        <figure>
+          <img src="out/part2_2/fft/derek_nutmeg_derek_aligned.jpg" alt="Aligned Derek">
+          <figcaption>
+            <span class="filename">derek_nutmeg_derek_aligned.jpg</span>
+            Derek, aligned, grayscale
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_2/fft/derek_nutmeg_nutmeg_aligned.jpg" alt="Aligned Nutmeg">
+          <figcaption>
+            <span class="filename">derek_nutmeg_nutmeg_aligned.jpg</span>
+            Nutmeg, aligned, grayscale
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_2/fft/derek_nutmeg_fft_derek.jpg" alt="FFT of Derek">
+          <figcaption>
+            <span class="filename">derek_nutmeg_fft_derek.jpg</span>
+            log magnitude, Derek
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_2/fft/derek_nutmeg_fft_nutmeg.jpg" alt="FFT of Nutmeg">
+          <figcaption>
+            <span class="filename">derek_nutmeg_fft_nutmeg.jpg</span>
+            log magnitude, Nutmeg
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_2/fft/derek_nutmeg_low_pass_sigma=12.jpg" alt="Low-pass Derek">
+          <figcaption>
+            <span class="filename">derek_nutmeg_low_pass_sigma=12.jpg</span>
+            low-pass Derek, σ = 12
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_2/fft/derek_nutmeg_high_pass_sigma=4.jpg" alt="High-pass Nutmeg">
+          <figcaption>
+            <span class="filename">derek_nutmeg_high_pass_sigma=4.jpg</span>
+            high-pass Nutmeg, σ = 4, rescaled
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_2/fft/derek_nutmeg_fft_low_pass.jpg" alt="FFT of low-pass Derek">
+          <figcaption>
+            <span class="filename">derek_nutmeg_fft_low_pass.jpg</span>
+            log magnitude, low-pass
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_2/fft/derek_nutmeg_fft_high_pass.jpg" alt="FFT of high-pass Nutmeg">
+          <figcaption>
+            <span class="filename">derek_nutmeg_fft_high_pass.jpg</span>
+            log magnitude, high-pass
+          </figcaption>
+        </figure>
+      </div>
+      <div class="grid cols-2">
+        <figure>
+          <img src="out/part2_2/fft/derek_nutmeg_hybrid.jpg" alt="Grayscale Derek Nutmeg hybrid">
+          <figcaption>
+            <span class="filename">derek_nutmeg_hybrid.jpg</span>
+            grayscale hybrid used for the spectrum
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_2/fft/derek_nutmeg_fft_hybrid.jpg" alt="FFT of hybrid">
+          <figcaption>
+            <span class="filename">derek_nutmeg_fft_hybrid.jpg</span>
+            log magnitude, hybrid
+          </figcaption>
+        </figure>
+      </div>
+
+      <h3>Potato and cake</h3>
+      <div class="grid">
+        <figure>
+          <img src="data/potato.jpg" alt="Potato">
+          <figcaption>
+            <span class="filename">potato.jpg</span>
+            low-frequency image
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="data/cake.png" alt="Cake">
+          <figcaption>
+            <span class="filename">cake.png</span>
+            high-frequency image
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_2/potato_cake_low=14_high=4.jpg" alt="Potato and cake hybrid">
+          <figcaption>
+            <span class="filename">potato_cake_low=14_high=4.jpg</span>
+            color hybrid, low σ = 14, high σ = 4
+          </figcaption>
+        </figure>
+      </div>
+
+      <h3>Lion and tiger</h3>
+      <div class="grid">
+        <figure>
+          <img src="data/lion.jpg" alt="Lion">
+          <figcaption>
+            <span class="filename">lion.jpg</span>
+            low-frequency image
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="data/tiger.jpg" alt="Tiger">
+          <figcaption>
+            <span class="filename">tiger.jpg</span>
+            high-frequency image
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_2/lion_tiger_low=12_high=3.jpg" alt="Lion and tiger hybrid">
+          <figcaption>
+            <span class="filename">lion_tiger_low=12_high=3.jpg</span>
+            color hybrid, low σ = 12, high σ = 3
+          </figcaption>
+        </figure>
+      </div>
+
+      <h3>Bells and Whistles: color</h3>
+      <div class="explain">
+        <p class="writeup">[You built the hybrids in color on both images. Say whether color helps more on the high-frequency image, the low-frequency image, or both, and justify that choice. If you tried a grayscale-only version, put it here and compare.]</p>
+      </div>
+    </section>
+
+    <section id="part2-3">
+      <h2>Part 2.3: Gaussian and Laplacian Stacks</h2>
+      <div class="explain">
+        <p>Stacks stay at the original resolution. There is no downsampling and no <code>cv2.pyrDown</code>. Level 0 is the image. Level <em>i</em> is the image blurred with σ = 2<sup>i−1</sup> (σ = 1, 2, 4, 8, 16, 32). Laplacian level <em>i</em> is Gaussian <em>i</em> minus Gaussian <em>i+1</em>, and the last Laplacian level is the blurriest Gaussian so the levels sum back to the image. Laplacian figures are rescaled to [0, 1] because those bands are signed.</p>
+        <p class="writeup">[Explain a stack versus a pyramid, and what each Gaussian and Laplacian level is showing on the apple and the orange. Mention that σ doubles each level to imitate a pyramid that would have halved the resolution.]</p>
+      </div>
+      <pre><code>def get_gaussian_stack(img, n):
+    # G0 = img, Gi = img blurred with sigma 2 ** (i - 1)
+    stack = [img]
+    for i in range(1, n):
+        stack.append(conv_color(img, gaussian(2 ** (i - 1))))
+    return stack
+
+def get_laplacian_stack(img, n):
+    g_stack = get_gaussian_stack(img, n)
+    stack = []
+    for i in range(n - 1):
+        stack.append(g_stack[i] - g_stack[i + 1])
+    stack.append(g_stack[-1])
+    return stack</code></pre>
+
+      <h3>Apple, Gaussian stack</h3>
+      <div class="grid">
+        <figure>
+          <img src="out/part2_3/apple/gaussian_0.jpg" alt="Apple Gaussian 0">
+          <figcaption><span class="filename">gaussian_0.jpg</span>level 0, original</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/apple/gaussian_1.jpg" alt="Apple Gaussian 1">
+          <figcaption><span class="filename">gaussian_1.jpg</span>level 1, σ = 1</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/apple/gaussian_2.jpg" alt="Apple Gaussian 2">
+          <figcaption><span class="filename">gaussian_2.jpg</span>level 2, σ = 2</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/apple/gaussian_3.jpg" alt="Apple Gaussian 3">
+          <figcaption><span class="filename">gaussian_3.jpg</span>level 3, σ = 4</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/apple/gaussian_4.jpg" alt="Apple Gaussian 4">
+          <figcaption><span class="filename">gaussian_4.jpg</span>level 4, σ = 8</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/apple/gaussian_5.jpg" alt="Apple Gaussian 5">
+          <figcaption><span class="filename">gaussian_5.jpg</span>level 5, σ = 16</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/apple/gaussian_6.jpg" alt="Apple Gaussian 6">
+          <figcaption><span class="filename">gaussian_6.jpg</span>level 6, σ = 32</figcaption>
+        </figure>
+      </div>
+      <h3>Apple, Laplacian stack</h3>
+      <div class="grid">
+        <figure>
+          <img src="out/part2_3/apple/laplacian_0.jpg" alt="Apple Laplacian 0">
+          <figcaption><span class="filename">laplacian_0.jpg</span>level 0, rescaled</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/apple/laplacian_1.jpg" alt="Apple Laplacian 1">
+          <figcaption><span class="filename">laplacian_1.jpg</span>level 1, rescaled</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/apple/laplacian_2.jpg" alt="Apple Laplacian 2">
+          <figcaption><span class="filename">laplacian_2.jpg</span>level 2, rescaled</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/apple/laplacian_3.jpg" alt="Apple Laplacian 3">
+          <figcaption><span class="filename">laplacian_3.jpg</span>level 3, rescaled</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/apple/laplacian_4.jpg" alt="Apple Laplacian 4">
+          <figcaption><span class="filename">laplacian_4.jpg</span>level 4, rescaled</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/apple/laplacian_5.jpg" alt="Apple Laplacian 5">
+          <figcaption><span class="filename">laplacian_5.jpg</span>level 5, rescaled</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/apple/laplacian_6.jpg" alt="Apple Laplacian 6">
+          <figcaption><span class="filename">laplacian_6.jpg</span>level 6, leftover low pass</figcaption>
+        </figure>
+      </div>
+
+      <h3>Orange, Gaussian stack</h3>
+      <div class="grid">
+        <figure>
+          <img src="out/part2_3/orange/gaussian_0.jpg" alt="Orange Gaussian 0">
+          <figcaption><span class="filename">gaussian_0.jpg</span>level 0, original</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/orange/gaussian_1.jpg" alt="Orange Gaussian 1">
+          <figcaption><span class="filename">gaussian_1.jpg</span>level 1, σ = 1</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/orange/gaussian_2.jpg" alt="Orange Gaussian 2">
+          <figcaption><span class="filename">gaussian_2.jpg</span>level 2, σ = 2</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/orange/gaussian_3.jpg" alt="Orange Gaussian 3">
+          <figcaption><span class="filename">gaussian_3.jpg</span>level 3, σ = 4</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/orange/gaussian_4.jpg" alt="Orange Gaussian 4">
+          <figcaption><span class="filename">gaussian_4.jpg</span>level 4, σ = 8</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/orange/gaussian_5.jpg" alt="Orange Gaussian 5">
+          <figcaption><span class="filename">gaussian_5.jpg</span>level 5, σ = 16</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/orange/gaussian_6.jpg" alt="Orange Gaussian 6">
+          <figcaption><span class="filename">gaussian_6.jpg</span>level 6, σ = 32</figcaption>
+        </figure>
+      </div>
+      <h3>Orange, Laplacian stack</h3>
+      <div class="grid">
+        <figure>
+          <img src="out/part2_3/orange/laplacian_0.jpg" alt="Orange Laplacian 0">
+          <figcaption><span class="filename">laplacian_0.jpg</span>level 0, rescaled</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/orange/laplacian_1.jpg" alt="Orange Laplacian 1">
+          <figcaption><span class="filename">laplacian_1.jpg</span>level 1, rescaled</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/orange/laplacian_2.jpg" alt="Orange Laplacian 2">
+          <figcaption><span class="filename">laplacian_2.jpg</span>level 2, rescaled</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/orange/laplacian_3.jpg" alt="Orange Laplacian 3">
+          <figcaption><span class="filename">laplacian_3.jpg</span>level 3, rescaled</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/orange/laplacian_4.jpg" alt="Orange Laplacian 4">
+          <figcaption><span class="filename">laplacian_4.jpg</span>level 4, rescaled</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/orange/laplacian_5.jpg" alt="Orange Laplacian 5">
+          <figcaption><span class="filename">laplacian_5.jpg</span>level 5, rescaled</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_3/orange/laplacian_6.jpg" alt="Orange Laplacian 6">
+          <figcaption><span class="filename">laplacian_6.jpg</span>level 6, leftover low pass</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="part2-4">
+      <h2>Part 2.4: Multiresolution Blending</h2>
+      <div class="explain">
+        <p>At every level, the new band is <code>S · L_apple + (1 − S) · L_orange</code>, where <code>S</code> is the Gaussian stack of the mask. The blend is the sum of those bands. The oraple mask is a vertical step: 1 on the left half, 0 on the right. The other two masks are hand-drawn. White keeps the first image.</p>
+        <p class="writeup">[Explain why a hard seam survives if you only blend at one scale, and why blurring the mask across the stack hides it. Then describe the oraple and the two custom blends: what each mask selects, and why the irregular masks (street lights, hair and nose) needed a soft transition.]</p>
+      </div>
+      <pre><code>a_lap = get_laplacian_stack(a, n)
+b_lap = get_laplacian_stack(b, n)
+m_stack = get_gaussian_stack(mask, n)
+a_levels = [m * l for m, l in zip(m_stack, a_lap)]
+b_levels = [(1 - m) * l for m, l in zip(m_stack, b_lap)]
+blend = [x + y for x, y in zip(a_levels, b_levels)]</code></pre>
+
+      <h3>Oraple</h3>
+      <figure class="single-figure">
+        <img src="out/part2_4/l=apple_r=orange_blended.jpg" alt="Oraple">
+        <figcaption>
+          <span class="filename">l=apple_r=orange_blended.jpg</span>
+          left half apple, right half orange
+        </figcaption>
+      </figure>
+
+      <h3>Figure 3.42, panels (a) through (l)</h3>
+      <div class="explain">
+        <p>Rows are Laplacian levels 0, 2, and 4, then the sum of every level. Columns are masked apple, masked orange, and the blend. On the first three rows, zero is drawn as mid-gray. The last row is the reconstructed image.</p>
+        <p class="writeup">[Relate these twelve panels to Figure 3.42 in Szeliski. Say what the fine bands versus the coarse bands are doing at the seam, and why the bottom-right panel is the oraple.]</p>
+      </div>
+      <div class="grid">
+        <figure>
+          <img src="out/part2_4/figure_3_42/a.jpg" alt="Figure 3.42 panel a">
+          <figcaption><span class="filename">(a)</span>apple, Laplacian level 0</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/figure_3_42/b.jpg" alt="Figure 3.42 panel b">
+          <figcaption><span class="filename">(b)</span>orange, Laplacian level 0</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/figure_3_42/c.jpg" alt="Figure 3.42 panel c">
+          <figcaption><span class="filename">(c)</span>blend, level 0</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/figure_3_42/d.jpg" alt="Figure 3.42 panel d">
+          <figcaption><span class="filename">(d)</span>apple, Laplacian level 2</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/figure_3_42/e.jpg" alt="Figure 3.42 panel e">
+          <figcaption><span class="filename">(e)</span>orange, Laplacian level 2</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/figure_3_42/f.jpg" alt="Figure 3.42 panel f">
+          <figcaption><span class="filename">(f)</span>blend, level 2</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/figure_3_42/g.jpg" alt="Figure 3.42 panel g">
+          <figcaption><span class="filename">(g)</span>apple, Laplacian level 4</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/figure_3_42/h.jpg" alt="Figure 3.42 panel h">
+          <figcaption><span class="filename">(h)</span>orange, Laplacian level 4</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/figure_3_42/i.jpg" alt="Figure 3.42 panel i">
+          <figcaption><span class="filename">(i)</span>blend, level 4</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/figure_3_42/j.jpg" alt="Figure 3.42 panel j">
+          <figcaption><span class="filename">(j)</span>apple, sum of masked levels</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/figure_3_42/k.jpg" alt="Figure 3.42 panel k">
+          <figcaption><span class="filename">(k)</span>orange, sum of masked levels</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/figure_3_42/l.jpg" alt="Figure 3.42 panel l">
+          <figcaption><span class="filename">(l)</span>oraple, sum of blended levels</figcaption>
+        </figure>
+      </div>
+
+      <h3>Day and night, irregular mask</h3>
+      <div class="grid cols-2">
+        <figure>
+          <img src="out/part2_4/night_streets_day_input_1.jpg" alt="Night street">
+          <figcaption>
+            <span class="filename">night_streets_day_input_1.jpg</span>
+            night, kept where the mask is white
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/night_streets_day_input_2.jpg" alt="Day street">
+          <figcaption>
+            <span class="filename">night_streets_day_input_2.jpg</span>
+            day, kept where the mask is black
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/night_streets_day_mask.jpg" alt="Street mask">
+          <figcaption>
+            <span class="filename">night_streets_day_mask.jpg</span>
+            irregular mask over the streets
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/night_streets_day_blended.jpg" alt="Day and night blend">
+          <figcaption>
+            <span class="filename">night_streets_day_blended.jpg</span>
+            blended result
+          </figcaption>
+        </figure>
+      </div>
+
+      <h3>Two portraits, irregular mask</h3>
+      <div class="grid cols-2">
+        <figure>
+          <img src="out/part2_4/me_matty_input_1.jpg" alt="First portrait">
+          <figcaption>
+            <span class="filename">me_matty_input_1.jpg</span>
+            first image, kept where the mask is white
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/me_matty_input_2.jpg" alt="Second portrait">
+          <figcaption>
+            <span class="filename">me_matty_input_2.jpg</span>
+            second image, kept where the mask is black
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/me_matty_mask.jpg" alt="Hair and nose mask">
+          <figcaption>
+            <span class="filename">me_matty_mask.jpg</span>
+            irregular mask: hair and nose
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/me_matty_blended.jpg" alt="Portrait blend">
+          <figcaption>
+            <span class="filename">me_matty_blended.jpg</span>
+            blended result
+          </figcaption>
+        </figure>
+      </div>
+
+      <h3>Bells and Whistles: color</h3>
+      <div class="explain">
+        <p class="writeup">[The blends above are in color. Say whether color makes the seam more or less visible, and justify keeping color on both images rather than grayscaling one of them.]</p>
+      </div>
+    </section>
+
+    <section id="learned">
+      <h2>What I Learned</h2>
+      <div class="explain">
+        <p class="writeup">[The most important thing you learned from this project. A short paragraph is enough. The course asks for this on the webpage.]</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    CS180 Project 2 · Fun with Filters and Frequencies
+  </footer>
+</body>
+</html>
