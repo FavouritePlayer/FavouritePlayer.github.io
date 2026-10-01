@@ -230,6 +230,10 @@
       height: auto;
     }
 
+    .single-figure.result {
+      max-width: 420px;
+    }
+
     footer {
       border-top: 1px solid var(--border);
       color: var(--muted);
@@ -1058,7 +1062,7 @@ b_levels = [(1 - m) * l for m, l in zip(m_stack, b_lap)]
 blend = [x + y for x, y in zip(a_levels, b_levels)]</code></pre>
 
       <h3>Oraple</h3>
-      <figure class="single-figure">
+      <figure class="single-figure result">
         <img src="out/part2_4/l=apple_r=orange_blended.jpg" alt="Oraple">
         <figcaption>
           <span class="filename">l=apple_r=orange_blended.jpg</span>
@@ -1122,7 +1126,7 @@ blend = [x + y for x, y in zip(a_levels, b_levels)]</code></pre>
       </div>
 
       <h3>Day and night</h3>
-      <div class="grid cols-4">
+      <div class="grid">
         <figure>
           <img src="out/part2_4/night_streets_day_input_1.jpg" alt="Night street">
           <figcaption>
@@ -1144,14 +1148,14 @@ blend = [x + y for x, y in zip(a_levels, b_levels)]</code></pre>
             streets
           </figcaption>
         </figure>
-        <figure>
-          <img src="out/part2_4/night_streets_day_blended.jpg" alt="Day and night blend">
-          <figcaption>
-            <span class="filename">blend</span>
-            result
-          </figcaption>
-        </figure>
       </div>
+      <figure class="single-figure result">
+        <img src="out/part2_4/night_streets_day_blended.jpg" alt="Day and night blend">
+        <figcaption>
+          <span class="filename">night_streets_day_blended.jpg</span>
+          blend
+        </figcaption>
+      </figure>
       <div class="figure-grid">
         <figure>
           <img src="out/part2_4/night_streets_day_figure/a.jpg" alt="Night level 0">
@@ -1204,7 +1208,7 @@ blend = [x + y for x, y in zip(a_levels, b_levels)]</code></pre>
       </div>
 
       <h3>Two portraits</h3>
-      <div class="grid cols-4">
+      <div class="grid">
         <figure>
           <img src="out/part2_4/me_matty_input_1.jpg" alt="First portrait">
           <figcaption>
@@ -1226,14 +1230,14 @@ blend = [x + y for x, y in zip(a_levels, b_levels)]</code></pre>
             hair and nose
           </figcaption>
         </figure>
-        <figure>
-          <img src="out/part2_4/me_matty_blended.jpg" alt="Portrait blend">
-          <figcaption>
-            <span class="filename">blend</span>
-            result
-          </figcaption>
-        </figure>
       </div>
+      <figure class="single-figure result">
+        <img src="out/part2_4/me_matty_blended.jpg" alt="Portrait blend">
+        <figcaption>
+          <span class="filename">me_matty_blended.jpg</span>
+          blend
+        </figcaption>
+      </figure>
       <div class="figure-grid">
         <figure>
           <img src="out/part2_4/me_matty_figure/a.jpg" alt="Portrait 1 level 0">
