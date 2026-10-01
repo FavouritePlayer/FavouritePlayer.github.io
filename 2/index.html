@@ -133,12 +133,49 @@
     .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
     .grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
 
+    .grid.thresh figcaption {
+      padding: 6px 8px;
+      font-size: 0.78rem;
+    }
+
+    .grid.thresh figcaption .filename {
+      display: none;
+    }
+
+    .chosen {
+      max-width: 480px;
+    }
+
+    .freq, .stack-row {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .freq { grid-template-columns: repeat(5, 1fr); }
+    .stack-row { grid-template-columns: repeat(7, 1fr); }
+
+    .freq figcaption, .stack-row figcaption {
+      padding: 6px 4px;
+      font-size: 0.72rem;
+    }
+
+    .freq figcaption .filename, .stack-row figcaption .filename {
+      display: none;
+    }
+
+    .row-label {
+      margin: 18px 0 8px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
     .figure-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
       max-width: 680px;
-      margin: 0 0 28px;
+      margin: 0 auto 28px;
     }
 
     .figure-grid figure {
@@ -203,11 +240,15 @@
 
     @media (max-width: 900px) {
       .grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+      .grid.thresh { grid-template-columns: repeat(4, 1fr); }
     }
 
     @media (max-width: 700px) {
       .grid, .grid.cols-2, .grid.cols-4 { grid-template-columns: 1fr; }
+      .grid.thresh { grid-template-columns: repeat(4, 1fr); }
       .figure-grid { grid-template-columns: repeat(3, 1fr); }
+      .freq { grid-template-columns: repeat(5, 1fr); }
+      .stack-row { grid-template-columns: repeat(7, 1fr); }
     }
   </style>
 </head>
@@ -366,9 +407,6 @@ def convolve2(img, kernel, mode="same"):
 
     <section id="part1-2">
       <h2>Part 1.2: Finite Difference Operator</h2>
-      <div class="explain">
-        <p class="writeup">[Why t = 0.30. Tried 0.20, 0.25, 0.30, 0.35, 0.40.]</p>
-      </div>
       <figure class="single-figure">
         <img src="data/cameraman.png" alt="Cameraman">
         <figcaption>
@@ -400,42 +438,45 @@ def convolve2(img, kernel, mode="same"):
         </figure>
       </div>
       <h3>Binarized edges</h3>
-      <div class="grid">
+      <div class="grid cols-4 thresh">
         <figure>
           <img src="out/part1_2/0_edges_t=0.2.jpg" alt="Edges at 0.2">
           <figcaption>
             <span class="filename">0_edges_t=0.2.jpg</span>
-            threshold 0.20
+            t = 0.20
           </figcaption>
         </figure>
         <figure>
           <img src="out/part1_2/1_edges_t=0.25.jpg" alt="Edges at 0.25">
           <figcaption>
             <span class="filename">1_edges_t=0.25.jpg</span>
-            threshold 0.25
-          </figcaption>
-        </figure>
-        <figure>
-          <img src="out/part1_2/2_edges_t=0.3.jpg" alt="Edges at 0.3">
-          <figcaption>
-            <span class="filename">2_edges_t=0.3.jpg</span>
-            threshold 0.30
+            t = 0.25
           </figcaption>
         </figure>
         <figure>
           <img src="out/part1_2/3_edges_t=0.35.jpg" alt="Edges at 0.35">
           <figcaption>
             <span class="filename">3_edges_t=0.35.jpg</span>
-            threshold 0.35
+            t = 0.35
           </figcaption>
         </figure>
         <figure>
           <img src="out/part1_2/4_edges_t=0.4.jpg" alt="Edges at 0.4">
           <figcaption>
             <span class="filename">4_edges_t=0.4.jpg</span>
-            threshold 0.40
+            t = 0.40
           </figcaption>
         </figure>
+      </div>
+      <figure class="single-figure chosen">
+        <img src="out/part1_2/2_edges_t=0.3.jpg" alt="Edges at 0.3">
+        <figcaption>
+          <span class="filename">2_edges_t=0.3.jpg</span>
+          t = 0.30
+        </figcaption>
+      </figure>
+      <div class="explain">
+        <p class="writeup">[Why t = 0.30. The other thresholds are the row above.]</p>
       </div>
     </section>
 
@@ -758,78 +799,50 @@ hybrid = np.clip(low_part + high_part, 0, 1)</code></pre>
       <div class="explain">
         <p class="writeup">[Walk through the aligned pair, the two filters, and the log-magnitude FFTs. These are the grayscale copies. The color hybrid is above.]</p>
       </div>
-      <div class="grid cols-2">
+      <p class="row-label">Spatial</p>
+      <div class="freq">
         <figure>
           <img src="out/part2_2/fft/derek_nutmeg_derek_aligned.jpg" alt="Aligned Derek">
-          <figcaption>
-            <span class="filename">derek_nutmeg_derek_aligned.jpg</span>
-            Derek, aligned, grayscale
-          </figcaption>
+          <figcaption>Derek</figcaption>
         </figure>
         <figure>
           <img src="out/part2_2/fft/derek_nutmeg_nutmeg_aligned.jpg" alt="Aligned Nutmeg">
-          <figcaption>
-            <span class="filename">derek_nutmeg_nutmeg_aligned.jpg</span>
-            Nutmeg, aligned, grayscale
-          </figcaption>
-        </figure>
-        <figure>
-          <img src="out/part2_2/fft/derek_nutmeg_fft_derek.jpg" alt="FFT of Derek">
-          <figcaption>
-            <span class="filename">derek_nutmeg_fft_derek.jpg</span>
-            log magnitude, Derek
-          </figcaption>
-        </figure>
-        <figure>
-          <img src="out/part2_2/fft/derek_nutmeg_fft_nutmeg.jpg" alt="FFT of Nutmeg">
-          <figcaption>
-            <span class="filename">derek_nutmeg_fft_nutmeg.jpg</span>
-            log magnitude, Nutmeg
-          </figcaption>
+          <figcaption>Nutmeg</figcaption>
         </figure>
         <figure>
           <img src="out/part2_2/fft/derek_nutmeg_low_pass_sigma=12.jpg" alt="Low-pass Derek">
-          <figcaption>
-            <span class="filename">derek_nutmeg_low_pass_sigma=12.jpg</span>
-            low-pass Derek, σ = 12
-          </figcaption>
+          <figcaption>low-pass, σ = 12</figcaption>
         </figure>
         <figure>
           <img src="out/part2_2/fft/derek_nutmeg_high_pass_sigma=4.jpg" alt="High-pass Nutmeg">
-          <figcaption>
-            <span class="filename">derek_nutmeg_high_pass_sigma=4.jpg</span>
-            high-pass Nutmeg, σ = 4, rescaled
-          </figcaption>
+          <figcaption>high-pass, σ = 4</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_2/fft/derek_nutmeg_hybrid.jpg" alt="Grayscale hybrid">
+          <figcaption>hybrid</figcaption>
+        </figure>
+      </div>
+      <p class="row-label">Fourier</p>
+      <div class="freq">
+        <figure>
+          <img src="out/part2_2/fft/derek_nutmeg_fft_derek.jpg" alt="FFT of Derek">
+          <figcaption>Derek</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_2/fft/derek_nutmeg_fft_nutmeg.jpg" alt="FFT of Nutmeg">
+          <figcaption>Nutmeg</figcaption>
         </figure>
         <figure>
           <img src="out/part2_2/fft/derek_nutmeg_fft_low_pass.jpg" alt="FFT of low-pass Derek">
-          <figcaption>
-            <span class="filename">derek_nutmeg_fft_low_pass.jpg</span>
-            log magnitude, low-pass
-          </figcaption>
+          <figcaption>low-pass</figcaption>
         </figure>
         <figure>
           <img src="out/part2_2/fft/derek_nutmeg_fft_high_pass.jpg" alt="FFT of high-pass Nutmeg">
-          <figcaption>
-            <span class="filename">derek_nutmeg_fft_high_pass.jpg</span>
-            log magnitude, high-pass
-          </figcaption>
-        </figure>
-      </div>
-      <div class="grid cols-2">
-        <figure>
-          <img src="out/part2_2/fft/derek_nutmeg_hybrid.jpg" alt="Grayscale Derek Nutmeg hybrid">
-          <figcaption>
-            <span class="filename">derek_nutmeg_hybrid.jpg</span>
-            grayscale hybrid used for the spectrum
-          </figcaption>
+          <figcaption>high-pass</figcaption>
         </figure>
         <figure>
           <img src="out/part2_2/fft/derek_nutmeg_fft_hybrid.jpg" alt="FFT of hybrid">
-          <figcaption>
-            <span class="filename">derek_nutmeg_fft_hybrid.jpg</span>
-            log magnitude, hybrid
-          </figcaption>
+          <figcaption>hybrid</figcaption>
         </figure>
       </div>
 
@@ -906,7 +919,7 @@ def get_laplacian_stack(img, n):
     return stack</code></pre>
 
       <h3>Apple, Gaussian stack</h3>
-      <div class="grid">
+      <div class="stack-row">
         <figure>
           <img src="out/part2_3/apple/gaussian_0.jpg" alt="Apple Gaussian 0">
           <figcaption><span class="filename">gaussian_0.jpg</span>level 0, original</figcaption>
@@ -937,7 +950,7 @@ def get_laplacian_stack(img, n):
         </figure>
       </div>
       <h3>Apple, Laplacian stack</h3>
-      <div class="grid">
+      <div class="stack-row">
         <figure>
           <img src="out/part2_3/apple/laplacian_0.jpg" alt="Apple Laplacian 0">
           <figcaption><span class="filename">laplacian_0.jpg</span>level 0, rescaled</figcaption>
@@ -969,7 +982,7 @@ def get_laplacian_stack(img, n):
       </div>
 
       <h3>Orange, Gaussian stack</h3>
-      <div class="grid">
+      <div class="stack-row">
         <figure>
           <img src="out/part2_3/orange/gaussian_0.jpg" alt="Orange Gaussian 0">
           <figcaption><span class="filename">gaussian_0.jpg</span>level 0, original</figcaption>
@@ -1000,7 +1013,7 @@ def get_laplacian_stack(img, n):
         </figure>
       </div>
       <h3>Orange, Laplacian stack</h3>
-      <div class="grid">
+      <div class="stack-row">
         <figure>
           <img src="out/part2_3/orange/laplacian_0.jpg" alt="Orange Laplacian 0">
           <figcaption><span class="filename">laplacian_0.jpg</span>level 0, rescaled</figcaption>
