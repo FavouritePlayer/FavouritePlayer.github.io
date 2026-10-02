@@ -210,9 +210,7 @@
     }
 
     figcaption .filename {
-      color: var(--text);
-      display: block;
-      margin-bottom: 4px;
+      display: none;
     }
 
     .single-figure {
@@ -266,7 +264,7 @@
   <main>
     <section>
       <div class="explain">
-        <p class="writeup">[Intro.]</p>
+        <p>Here is my project 2! In this project I implemented convolutions from scratch, finite difference and derivative of gaussian edge detection, unsharp masking, hybrid images, and multiresolution blending with gaussian and laplacian stacks. The figures below are my results.</p>
       </div>
       <p class="toc">
         <a href="#part1-1">1.1 Convolutions</a> ·
@@ -283,11 +281,11 @@
     <section id="part1-1">
       <h2>Part 1.1: Convolutions from Scratch</h2>
       <div class="explain">
-        <p>Here is my implementation of the required convolution functions! THe first step in a convolution is to flip the kernel. From there, you want to slide the kernel across all pixels in the image, utilizing elementwise products to compute a single final value for the new pixel.</p>
-        <p>Of importance is the notion of mode="same" or mode="full". Both of these methods require first zero padding our input image such that our kernel can safely be centered on every pixel and compute the same required elementwise product operations without causing an out of bounds error. I.e. a 3x3 kernel centered on the top left pixel needs an extra margin of 1 pixel padding on both the top and left (and since it is symmetric for the bottom right pixel, on the bottom and right as well). Using this logic, we can initialize out mode="full" output shape to be (height + kh - 1, width + kw -1) accounting for top and bottom where kh and kw is equal to the kernel’s shape.</p>
-        <p>From there, mode="full" and mode="same" differ. mode="full" is the output with the zero padding already applied while mode="same" crops the output image to be the same dimensions as the original image.</p>
-        <p>One more thing of note is the differences in convolve4 and convolve2. Convolve4 uses 4 indented for loops while convolve2 uses 2 along with a numpy elementwise product of two matrices, which is faster.</p>
-        <p>To define our kernels, we simply use a box kernel which is just of shape (k, k) divided by k^2 and the finite difference operators Dx = [-1, 1] and Dy = Dx.T</p>
+        <p>Here is my implementation of the required convolution functions! The first step in a convolution is to flip the kernel (without the flip it would be cross-correlation, which matters for asymmetric kernels like Dx). From there, you want to slide the kernel across all pixels in the image, utilizing elementwise products to compute a single final value for the new pixel.</p>
+        <p>Of importance is the notion of mode="same" or mode="full". Both of these methods require first zero padding our input image such that our kernel can safely be centered on every pixel and compute the same required elementwise product operations without causing an out of bounds error. I.e. a 3x3 kernel centered on the top left pixel needs an extra margin of 2 pixels padding on both the top and left (and since it is symmetric for the bottom right pixel, on the bottom and right as well). Using this logic, we can initialize our mode="full" output shape to be (height + kh - 1, width + kw -1) accounting for top and bottom where kh and kw is equal to the kernel’s shape.</p>
+        <p>From there, mode="full" and mode="same" differ. mode="full" is every position where the kernel overlaps the image while mode="same" crops the output image to be the same dimensions as the original image.</p>
+        <p>One more thing of note is the differences in convolve4 and convolve2. Convolve4 uses 4 nested for loops while convolve2 uses 2 along with a numpy elementwise product of two matrices, which is faster for the 9x9 box (656 ms vs 6874 ms). For Dx and Dy, convolve4 is actually faster (235 ms vs 621 ms), since the kernel only has 2 entries and convolve2 pays numpy’s overhead at every pixel. scipy.signal.convolve2d is far faster than both (29 ms for the box, 2 ms for Dx and Dy). Both my functions and scipy (boundary="fill") pad with zeros, so the outputs match, including the darker border on the box-filtered image.</p>
+        <p>To define our kernels, we simply use a box kernel which is just of shape (k, k) divided by k^2 and the finite difference operators Dx = [1, -1] and Dy = Dx.T</p>
       </div>
       <pre><code>def getBox(k):
     # kxk box filter, each entry is 1/k^2
@@ -487,14 +485,14 @@ def convolve2(img, kernel, mode="same"):
         </figcaption>
       </figure>
       <div class="explain">
-        <p>From there, we implement a binarization, where we basically set a cutoff value for the pixel images in gradient_i and black out the pixels that are below a threshold t. This must be assessed qualitatively and of the results given for different values of t, t=0.35 and t=0.4 is clearly the best as compared to t=0.4 outlines the back 3rd tripod leg and compared to t=0.20 and t=0.25 lacks the noise of the grass at the bottom.</p>
+        <p>From there, we implement a binarization, where we basically set a cutoff value for the pixel images in gradient_i and black out the pixels that are below a threshold t. This must be assessed qualitatively and of the results given for different values of t, t=0.30 is clearly the best as compared to t=0.35 and t=0.40 it keeps real edges like the back 3rd tripod leg, and compared to t=0.20 and t=0.25 lacks the noise of the grass at the bottom.</p>
       </div>
     </section>
 
     <section id="part1-3">
       <h2>Part 1.3: Derivative of Gaussian (DoG) Filter</h2>
       <div class="explain">
-        <p>This procedure here of first blurring with a gaussian (low pass filter) then convolving the resulting image with a finite difference operator provides different results than simply using only the finite difference operator. Most prominent, is that immediately, the edges and lines “detected” are much smoother. Furthermore, there seems to be less occurrences of noise in the image, providing a better holistic result. As a consequence however, the intensities of the lines detected are smaller and thus the binarization threshold is much smaller, but overall I believe this is a better result!</p>
+        <p>This procedure here of first blurring with a gaussian (low pass filter, 13x13, σ = 2) then convolving the resulting image with a finite difference operator provides different results than simply using only the finite difference operator. Most prominent, is that immediately, the edges and lines “detected” are much smoother. Furthermore, there seems to be less occurrences of noise in the image, since the gaussian removes the high frequency noise that the derivative would otherwise amplify, providing a better holistic result. As a consequence however, the blur spreads each edge over several pixels, so the intensities of the lines detected are smaller and the edges thicker, and thus the binarization threshold is much smaller (0.08), but overall I believe this is a better result!</p>
       </div>
       <pre><code>ksize = 13
 G = cv2.getGaussianKernel(ksize=ksize, sigma=2)
@@ -591,7 +589,7 @@ Gdy_kernel = scipy.signal.convolve2d(G, Dy, mode="full")</code></pre>
         </figcaption>
       </figure>
       <div class="explain">
-        <p>Here is the result of the associative property of convolutions, where (img * f) * g = img * (f * g). Instead of first blurring the image with a low pass filter, then utilizing the finite difference operator, we can see very clearly as of this result that the result of first convolving the low pass filter with the finite difference operator, then blurring the original image with the DoG filter, creates the same result.</p>
+        <p>Here is the result of the associative property of convolutions, where (img * f) * g = img * (f * g). Instead of first blurring the image with a low pass filter, then utilizing the finite difference operator, we can see very clearly as of this result that the result of first convolving the low pass filter with the finite difference operator, then convolving the original image with the DoG filter, creates the same result. The max absolute difference is about 1.3e-15 for dx, 1.4e-15 for dy and 1.9e-15 for gradient magnitude, and 0 edge pixels differ.</p>
       </div>
     </section>
 
@@ -716,12 +714,12 @@ unsharp_mask = lambda a: (1 + a) * unit - a * G</code></pre>
       </div>
 
       <div class="explain">
-        <p>We can see that for the taj mahal, as the value of alpha increases, the structure’s outline and edges becomes more pronounced. Additionally, minor differences like in the sky’s coloration which were previously not visible, are now more prominent. The same effect is visible on the crocodile photo, where the outline of the crocodile plane is more pronounced and contrast between parts of the image or significantly increased.</p>
+        <p>We can see that for the taj mahal, as the value of alpha increases, the structure’s outline and edges becomes more pronounced. Additionally, minor differences like in the sky’s coloration which were previously not visible, are now more prominent, since noise and compression artifacts get amplified too. At alpha = 5 the edges also start to show halos. The same effect is visible on the crocodile photo, where the outline of the crocodile is more pronounced and contrast between parts of the image is significantly increased.</p>
       </div>
 
       <h3>Blur a sharp image, then sharpen it</h3>
       <div class="explain">
-        <p>Now, here is the effect of blurring an image then sharpening it. The image of the prominent meme Tung Tung Tung Sahoor (Triple T) is first blurred, then has its derived a sharpening filter utilized directly on the blurred image. As shown, resharpening it does not result in the same image. THis is because inherently, blurring with a low pass gaussian filter loses some inherent information about the original image and cannot be reconstructed.</p>
+        <p>Now, here is the effect of blurring an image then sharpening it. The image of the prominent meme Tung Tung Tung Sahur (Triple T) is first blurred, then has its derived sharpening filter utilized directly on the blurred image with alpha = 1, 2, 3. As shown, resharpening it does not result in the same image. This is because inherently, blurring with a low pass gaussian filter loses some inherent information about the original image and cannot be reconstructed. Sharpening only boosts the high frequencies that survived the blur.</p>
       </div>
       <div class="grid">
         <figure>
@@ -1264,7 +1262,7 @@ blend = [x + y for x, y in zip(a_levels, b_levels)]</code></pre>
       </div>
       <div class="explain">
         <p>Day and night: The mask is white over the streets, so the night image (with the light trails from the cars) is kept on the roads and the day image everywhere else. The soft transition matters here because the night streets are much darker than the daytime buildings. With a hard mask, the edge of the streets would be a sharp dark outline.</p>
-        <p>My favorite so far is definitely the day and night photo as it reminds me of the Flash TV show with the light beams. Its cool so see the glare of cars in the night while the rest of the scenery is in the day.</p>
+        <p>My favorite so far is definitely the day and night photo as it reminds me of the Flash TV show with the light beams. It's cool to see the glare of cars in the night while the rest of the scenery is in the day.</p>
       </div>
 
       <h3>Two portraits</h3>
@@ -1356,7 +1354,7 @@ blend = [x + y for x, y in zip(a_levels, b_levels)]</code></pre>
     <section id="learned">
       <h2>What I Learned</h2>
       <div class="explain">
-        <p class="writeup">[Most important thing you learned.]</p>
+        <p>The most important thing I learned is probably the method of merging two images with laplacian stacks. Overall, seeing clearly the exact breakdown of the process of how at every single level of the stack, the mask is applied to that level and then all the levels are added back up together, really helped me understand why the blend looks so smooth instead of just having a hard line down the middle. Moving forward, I hope to experiment with even more crazier merges and masks!</p>
       </div>
     </section>
   </main>
