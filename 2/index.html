@@ -815,7 +815,7 @@ hybrid = np.clip(low_part + high_part, 0, 1)</code></pre>
         </figure>
       </div>
       <div class="explain">
-        <p>Derek and Nutmeg: Derek is the low frequency image (σ = 12, cutoff ≈ 7.8 cycles/image) and Nutmeg is the high frequency image (σ = 4, cutoff ≈ 23 cycles/image). Up close you see Nutmeg's fur, whiskers and eyes, and from far away Derek's face takes over. With a smaller σ_low like 8, Derek's mouth and jaw were still visible up close and competed with the cat.</p>
+        <p>Derek and Nutmeg: Derek is the low frequency image (σ = 12) and Nutmeg is the high frequency image (σ = 4). Up close you see Nutmeg's fur, whiskers and eyes, and from far away Derek's face takes over. With a smaller σ_low like 8, Derek's mouth and jaw were still visible up close and competed with the cat.</p>
       </div>
 
       <h3>Frequency analysis (Derek + Nutmeg)</h3>
@@ -894,7 +894,7 @@ hybrid = np.clip(low_part + high_part, 0, 1)</code></pre>
         </figure>
       </div>
       <div class="explain">
-        <p>Potato and cake: The potato is the low frequency image (σ = 14, ≈ 6.7 cycles/image) and the cake is the high frequency image (σ = 4, ≈ 23 cycles/image). Up close you see the frosting, candles and sprinkles, and from far away Mr. Potato Head is unmistakable. Above σ_high = 5, the sprinkles started showing even from far away, so 4 was the sweet spot. The potato's eyes and colors still show faintly behind the cake up close, since they are very high contrast.</p>
+        <p>Potato and cake: The potato is the low frequency image (σ = 14) and the cake is the high frequency image (σ = 4). Up close you see the frosting, candles and sprinkles, and from far away Mr. Potato Head is unmistakable. Above σ_high = 5, the sprinkles started showing even from far away, so 4 was the sweet spot. The potato's eyes and colors still show faintly behind the cake up close, since they are very high contrast.</p>
       </div>
 
       <h3>Lion and tiger</h3>
@@ -922,7 +922,7 @@ hybrid = np.clip(low_part + high_part, 0, 1)</code></pre>
         </figure>
       </div>
       <div class="explain">
-        <p>Lion and tiger: The lion is the low frequency image (σ = 12, ≈ 7.8 cycles/image) and the tiger is the high frequency image (σ = 3, ≈ 31 cycles/image). Up close it is clearly a tiger, and from far away it is a lion with its full mane. This pair works because the tiger is recognizable from its stripes (fine detail) and the lion from its mane (a big silhouette). I also tried it the other way around, and it was much weaker, since a blurred tiger without its stripes doesn't read as a tiger.</p>
+        <p>Lion and tiger: The lion is the low frequency image (σ = 12) and the tiger is the high frequency image (σ = 3). Up close it is clearly a tiger, and from far away it is a lion with its full mane. This pair works because the tiger is recognizable from its stripes (fine detail) and the lion from its mane (a big silhouette). I also tried it the other way around, and it was much weaker, since a blurred tiger without its stripes doesn't read as a tiger.</p>
       </div>
 
     </section>
