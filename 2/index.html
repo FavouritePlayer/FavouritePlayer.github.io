@@ -283,7 +283,11 @@
     <section id="part1-1">
       <h2>Part 1.1: Convolutions from Scratch</h2>
       <div class="explain">
-        <p class="writeup">[4-loop vs 2-loop, filter flip, zero padding, same vs full, runtimes vs scipy, how the borders are handled.]</p>
+        <p>Here is my implementation of the required convolution functions! The first step in a convolution is to flip the kernel (without the flip it would be cross-correlation, which matters for asymmetric kernels like Dx). From there, you want to slide the kernel across all pixels in the image, utilizing elementwise products to compute a single final value for the new pixel.</p>
+        <p>Of importance is the notion of mode="same" or mode="full". Both of these methods require first zero padding our input image such that our kernel can safely be centered on every pixel and compute the same required elementwise product operations without causing an out of bounds error. I.e. a 3x3 kernel centered on the top left pixel needs an extra margin of 2 pixels padding on both the top and left (and since it is symmetric for the bottom right pixel, on the bottom and right as well). Using this logic, we can initialize our mode="full" output shape to be (height + kh - 1, width + kw - 1) accounting for top and bottom where kh and kw is equal to the kernel’s shape.</p>
+        <p>From there, mode="full" and mode="same" differ. mode="full" is every position where the kernel overlaps the image while mode="same" crops the output image to be the same dimensions as the original image.</p>
+        <p>One more thing of note is the differences in convolve4 and convolve2. Convolve4 uses 4 nested for loops while convolve2 uses 2 along with a numpy elementwise product of two matrices, which is faster for the 9x9 box (656 ms vs 6874 ms). For Dx and Dy, convolve4 is actually faster (235 ms vs 621 ms), since the kernel only has 2 entries and convolve2 pays numpy’s overhead at every pixel. scipy.signal.convolve2d is far faster than both (29 ms for the box, 2 ms for Dx and Dy). Both my functions and scipy (boundary='fill') pad with zeros, so the outputs match, including the darker border on the box-filtered image.</p>
+        <p>To define our kernels, we simply use a box kernel which is just of shape (k, k) divided by k^2 and the finite difference operators Dx = [1, -1] and Dy = Dx.T</p>
       </div>
       <pre><code>def getBox(k):
     # kxk box filter, each entry is 1/k^2
@@ -411,6 +415,9 @@ def convolve2(img, kernel, mode="same"):
 
     <section id="part1-2">
       <h2>Part 1.2: Finite Difference Operator</h2>
+      <div class="explain">
+        <p>Here in 1.2 we have the same convolution of an image with finite difference operator kernels. We calculate the gradient magnitude image by utilizing the formula gradient_i = np.sqrt(I_Dx ** 2 + I_Dy ** 2) where I_Dx, I_Dy is the value of the cameraman’s pixel i after convolution with the finite difference operators and gradient_i is the value of the gradient magnitude image at pixel i.</p>
+      </div>
       <figure class="single-figure">
         <img src="data/cameraman.png" alt="Cameraman">
         <figcaption>
@@ -480,14 +487,14 @@ def convolve2(img, kernel, mode="same"):
         </figcaption>
       </figure>
       <div class="explain">
-        <p class="writeup">[Why t = 0.30. The other thresholds are the row above.]</p>
+        <p>From there, we implement a binarization, where we basically set a cutoff value for the pixel images in gradient_i, setting pixels above a threshold t to 1 (edge) and the rest to 0. This must be assessed qualitatively and of the results given for different values of t, t=0.30 is clearly the best as compared to t=0.35 and t=0.40 it keeps real edges like the back 3rd tripod leg, and compared to t=0.20 and t=0.25 lacks the noise of the grass at the bottom.</p>
       </div>
     </section>
 
     <section id="part1-3">
       <h2>Part 1.3: Derivative of Gaussian (DoG) Filter</h2>
       <div class="explain">
-        <p class="writeup">[Gaussian is 13×13, σ = 2. Compare with the finite-difference edges. DoG vs blur-then-derivative: max abs difference about 1e-15, and the t = 0.08 edges differ in 0 pixels.]</p>
+        <p>This procedure here of first blurring with a gaussian (low pass filter, 13x13, σ = 2) then convolving the resulting image with a finite difference operator provides different results than simply using only the finite difference operator. Most prominent, is that immediately, the edges and lines “detected” are much smoother. Furthermore, there seems to be less occurrences of noise in the image, since the gaussian removes the high frequency noise that the derivative would otherwise amplify, providing a better holistic result. As a consequence however, the blur spreads each edge over several pixels, so the intensities of the lines detected are smaller and the edges thicker, and thus the binarization threshold is much smaller (0.08), but overall I believe this is a better result!</p>
       </div>
       <pre><code>ksize = 13
 G = cv2.getGaussianKernel(ksize=ksize, sigma=2)
@@ -583,12 +590,15 @@ Gdy_kernel = scipy.signal.convolve2d(G, Dy, mode="full")</code></pre>
           DoG edges, binarized at 0.08
         </figcaption>
       </figure>
+      <div class="explain">
+        <p>Here is the result of the associative property of convolutions, where (img * f) * g = img * (f * g). Instead of first blurring the image with a low pass filter, then utilizing the finite difference operator, we can see very clearly as of this result that the result of first convolving the low pass filter with the finite difference operator, then convolving the original image with the DoG filter, creates the same result. The max absolute difference is about 1.3e-15 for dx, 1.4e-15 for dy and 1.9e-15 for gradient magnitude, and 0 edge pixels differ.</p>
+      </div>
     </section>
 
     <section id="part2-1">
       <h2>Part 2.1: Image Sharpening</h2>
       <div class="explain">
-        <p class="writeup">[How unsharp masking uses the blur and the high frequencies. What a = 1, 2, 3, 5 does on the Taj and the crocodile. What happens after blurring tung and sharpening it back.]</p>
+        <p>Unsharp masking as a concept is actually pretty simple. When we blur an image with a gaussian, we “smoothen” it and remove high detail features (high frequencies). As such, if we subtract the blurred image from the original image, we isolate the high detail (high frequency) features only of the image. As such, deriving from this is the image sharpening process, where we use a scaling factor, alpha, to add varying amounts of high detail features to the original image. This can be combined into a single convolution: f + α(f − f*G) = f * ((1 + α)δ − αG), where δ is the unit impulse.</p>
       </div>
       <pre><code># f + a (f - f ∗ G) = f ∗ [(1 + a) · unit - a · G]
 unit = np.zeros_like(G)
@@ -705,7 +715,14 @@ unsharp_mask = lambda a: (1 + a) * unit - a * G</code></pre>
         </figure>
       </div>
 
+      <div class="explain">
+        <p>We can see that for the taj mahal, as the value of alpha increases, the structure’s outline and edges becomes more pronounced. Additionally, minor differences like in the sky’s coloration which were previously not visible, are now more prominent, since noise and compression artifacts get amplified too. At α = 5 the edges also start to show halos. The same effect is visible on the crocodile photo, where the outline of the crocodile is more pronounced and contrast between parts of the image is significantly increased.</p>
+      </div>
+
       <h3>Blur a sharp image, then sharpen it</h3>
+      <div class="explain">
+        <p>Now, here is the effect of blurring an image then sharpening it. The image of the prominent meme Tung Tung Tung Sahur (Triple T) is first blurred with σ = 2, then the unsharp mask is applied directly to the blurred image with α = 1, 2, 3. As shown, resharpening it does not result in the same image. This is because inherently, blurring with a low pass gaussian filter loses some inherent information about the original image and cannot be reconstructed. Sharpening only boosts the high frequencies that survived the blur.</p>
+      </div>
       <div class="grid">
         <figure>
           <img src="data/tung.jpg" alt="Sharp portrait original">
