@@ -281,7 +281,7 @@
     <section id="part1-1">
       <h2>Part 1.1: Convolutions from Scratch</h2>
       <div class="explain">
-        <p>The first step in a convolution is to flip the kernel (without the flip it would be cross-correlation, which matters for asymmetric kernels like Dx). From there, you want to slide the kernel across all pixels in the image, utilizing elementwise products to compute a single final value for the new pixel.</p>
+        <p>The first step in a convolution is to flip the kernel. From there, you want to slide the kernel across all pixels in the image, utilizing elementwise products to compute a single final value for the new pixel.</p>
         <p>Of importance is the notion of mode="same" or mode="full". Both of these methods require first zero padding our input image such that our kernel can safely be centered on every pixel and compute the same required elementwise product operations without causing an out of bounds error. I.e. a 3x3 kernel centered on the top left pixel needs an extra margin of 2 pixels padding on both the top and left (and since it is symmetric for the bottom right pixel, on the bottom and right as well). Using this logic, we can initialize our mode="full" output shape to be (height + kh - 1, width + kw -1) accounting for top and bottom where kh and kw is equal to the kernel’s shape.</p>
         <p>From there, mode="full" and mode="same" differ. mode="full" is every position where the kernel overlaps the image while mode="same" crops the output image to be the same dimensions as the original image.</p>
         <p>One more thing of note is the differences in convolve4 and convolve2. Convolve4 uses 4 nested for loops while convolve2 uses 2 along with a numpy elementwise product of two matrices, which is faster for the 9x9 box (656 ms vs 6874 ms). For Dx and Dy, convolve4 is actually faster (235 ms vs 621 ms), since the kernel only has 2 entries and convolve2 pays numpy’s overhead at every pixel. scipy.signal.convolve2d is far faster than both (29 ms for the box, 2 ms for Dx and Dy). Both my functions and scipy (boundary="fill") pad with zeros, so the outputs match, including the darker border on the box-filtered image.</p>
@@ -589,7 +589,7 @@ Gdy_kernel = scipy.signal.convolve2d(G, Dy, mode="full")</code></pre>
         </figcaption>
       </figure>
       <div class="explain">
-        <p>Here is the result of the associative property of convolutions, where (img * f) * g = img * (f * g). Instead of first blurring the image with a low pass filter, then utilizing the finite difference operator, we can see very clearly as of this result that the result of first convolving the low pass filter with the finite difference operator, then convolving the original image with the DoG filter, creates the same result. The max absolute difference is about 1.3e-15 for dx, 1.4e-15 for dy and 1.9e-15 for gradient magnitude, and 0 edge pixels differ.</p>
+        <p>Here is the result of the associative property of convolutions, where (img * f) * g = img * (f * g). Instead of first blurring the image with a low pass filter, then utilizing the finite difference operator, we can see very clearly as of this result that the result of first convolving the low pass filter with the finite difference operator, then convolving the original image with the DoG filter, creates the same result. The max absolute difference is about 1.3e-15 for dx, 1.4e-15 for dy and 1.9e-15 for gradient magnitude.</p>
       </div>
     </section>
 
@@ -930,7 +930,7 @@ hybrid = np.clip(low_part + high_part, 0, 1)</code></pre>
     <section id="part2-3">
       <h2>Part 2.3: Gaussian and Laplacian Stacks</h2>
       <div class="explain">
-        <p>In lecture, a Gaussian pyramid is built by repeatedly blurring an image with a Gaussian and then downsampling it to half its size, so each level is a smaller, blurrier version of the one before. A Gaussian stack holds the same information, but every level stays at the original resolution and just gets progressively blurrier. Because the stack never shrinks, I can't rely on the same small filter blurring more at each level, so I use a different σ at each level instead. The lecture notes that the filter size should double for each half-size reduction, so level i is the original image blurred with σ = 2<sup>i−1</sup>, giving σ = 1, 2, 4, 8, 16, 32.</p>
+        <p>In lecture, a Gaussian pyramid is built by repeatedly blurring an image with a Gaussian and then downsampling it to half its size, so each level is a smaller, blurrier version of the one before. A Gaussian stack holds the same information, but every level stays at the original resolution and just gets progressively blurrier. Because the stack never shrinks, I can't rely on the same small filter blurring more at each level, so I use a different σ at each level instead. The lecture notes that the filter size should double for each half-size reduction, so level i is the original image blurred with σ = 2<sup>i−1</sup>, giving σ = 1, 2, 4, 8, 16, 32. Formally, G<sub>0</sub> = img and G<sub>i</sub> = img * gaussian(2<sup>i−1</sup>) for i = 1, …, N−1, while L<sub>i</sub> = G<sub>i</sub> − G<sub>i+1</sub> for i = 0, …, N−2 and L<sub>N−1</sub> = G<sub>N−1</sub>, so summing all the L<sub>i</sub> gives back the original image.</p>
       </div>
       <pre><code>def get_gaussian_stack(img, n):
     # G0 = img, Gi = img blurred with sigma 2 ** (i - 1)
@@ -1073,14 +1073,14 @@ def get_laplacian_stack(img, n):
         </figure>
       </div>
       <div class="explain">
-        <p>The Gaussian stack gets progressively blurrier. On the apple, the first levels lose the fine speckle on the skin, the middle levels lose the shading details, and by σ = 32 only the overall red shape and the background colors are left. Each Laplacian level is the difference between two neighboring Gaussian levels, so it holds one band of frequencies. Level 0 has the finest texture (the orange peel's dimples, the apple's speckle), the middle levels hold edges and shading, and the last level is the blurriest Gaussian, which holds the overall color. Because the differences telescope, adding all the Laplacian levels back up reproduces the original image exactly. The Laplacian images are rescaled for display since they contain negative values.</p>
+        <p>The Gaussian stack gets progressively blurrier. On the apple, the first levels lose the texture on the skin, the middle levels lose the shading details, and by σ = 32 only the overall red shape and the background colors are left. Each Laplacian level is the difference between two neighboring Gaussian levels, so it holds one band of frequencies. Level 0 has the finest texture, the middle levels hold edges and shading, and the last level is the blurriest Gaussian, which holds the overall color. Adding up all the laplacian levels produces the original image (note: the laplacian levels are rescaled since they have negative values).</p>
       </div>
     </section>
 
     <section id="part2-4">
       <h2>Part 2.4: Multiresolution Blending</h2>
       <div class="explain">
-        <p>If you blend two images with one hard mask, you get a visible seam. If you blur the mask a lot, you get a ghosted double image near the seam instead. The fix is to blend each frequency band separately with a mask blurred to match that band. I build the Laplacian stacks of both images and a Gaussian stack of the mask, then at each level compute S_i * L_A + (1 − S_i) * L_B, and add up all the blended levels. The fine levels use a nearly sharp mask, so fine detail switches over quickly at the seam. The coarse levels use a very blurred mask, so the overall colors fade gradually.</p>
+        <p>If you merge two images using one sharp mask, you can see a clear line where they meet. If you blur that mask a lot instead, the two images overlap and look see-through near the line. The fix is to split each image into layers from fine detail to rough shapes, and merge each layer with a mask that's blurred just the right amount for that layer. I build the Laplacian stacks of both images and a Gaussian stack of the mask, then at each level compute S_i * L_A + (1 − S_i) * L_B, and add up all the blended levels. The fine levels use a nearly sharp mask, so fine detail switches over quickly at the seam. The coarse levels use a very blurred mask, so the overall colors fade gradually.</p>
       </div>
       <pre><code>a_lap = get_laplacian_stack(a, n)
 b_lap = get_laplacian_stack(b, n)
@@ -1179,6 +1179,91 @@ blend = [x + y for x, y in zip(a_levels, b_levels)]</code></pre>
         <p>Figure 3.42: Rows are Laplacian levels 0, 2 and 4, and the last row is the sum of every level. The left column is the masked apple, the middle is the masked orange, and the right is the blend. At level 0 the seam is basically a sharp line, since that band is only fine texture. At level 4 the mask is much blurrier, so the transition is wide, which is where the colors of the two fruits mix. The bottom right panel is the sum of all the blended levels, which is the oraple.</p>
       </div>
 
+      <h3>Two portraits</h3>
+      <div class="grid">
+        <figure>
+          <img src="out/part2_4/me_matty_input_1.jpg" alt="First portrait">
+          <figcaption>
+            <span class="filename">input 1</span>
+            hair and nose
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/me_matty_input_2.jpg" alt="Second portrait">
+          <figcaption>
+            <span class="filename">input 2</span>
+            second face
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/me_matty_mask.jpg" alt="Hair and nose mask">
+          <figcaption>
+            <span class="filename">mask</span>
+            hair and nose
+          </figcaption>
+        </figure>
+      </div>
+      <figure class="single-figure result">
+        <img src="out/part2_4/me_matty_blended.jpg" alt="Portrait blend">
+        <figcaption>
+          <span class="filename">me_matty_blended.jpg</span>
+          blend
+        </figcaption>
+      </figure>
+      <div class="figure-grid">
+        <figure>
+          <img src="out/part2_4/me_matty_figure/a.jpg" alt="Portrait 1 level 0">
+          <figcaption><span class="filename">(a)</span>input 1, level 0</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/me_matty_figure/b.jpg" alt="Portrait 2 level 0">
+          <figcaption><span class="filename">(b)</span>input 2, level 0</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/me_matty_figure/c.jpg" alt="Portrait blend level 0">
+          <figcaption><span class="filename">(c)</span>blend, level 0</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/me_matty_figure/d.jpg" alt="Portrait 1 level 2">
+          <figcaption><span class="filename">(d)</span>input 1, level 2</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/me_matty_figure/e.jpg" alt="Portrait 2 level 2">
+          <figcaption><span class="filename">(e)</span>input 2, level 2</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/me_matty_figure/f.jpg" alt="Portrait blend level 2">
+          <figcaption><span class="filename">(f)</span>blend, level 2</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/me_matty_figure/g.jpg" alt="Portrait 1 level 4">
+          <figcaption><span class="filename">(g)</span>input 1, level 4</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/me_matty_figure/h.jpg" alt="Portrait 2 level 4">
+          <figcaption><span class="filename">(h)</span>input 2, level 4</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/me_matty_figure/i.jpg" alt="Portrait blend level 4">
+          <figcaption><span class="filename">(i)</span>blend, level 4</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/me_matty_figure/j.jpg" alt="Portrait 1 summed">
+          <figcaption><span class="filename">(j)</span>input 1, summed</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/me_matty_figure/k.jpg" alt="Portrait 2 summed">
+          <figcaption><span class="filename">(k)</span>input 2, summed</figcaption>
+        </figure>
+        <figure>
+          <img src="out/part2_4/me_matty_figure/l.jpg" alt="Portrait blend summed">
+          <figcaption><span class="filename">(l)</span>blend, summed</figcaption>
+        </figure>
+      </div>
+      <div class="explain">
+        <p>Two portraits: The mask selects my hair and nose (plus my necklace) from the first image and keeps the rest of Matty's face from the second. The two photos have similar lighting and background, so the seam disappears. The soft transition is especially important around the hair, where a hard mask would leave a cutout edge.</p>
+      </div>
+
       <h3>Day and night</h3>
       <div class="grid">
         <figure>
@@ -1263,91 +1348,6 @@ blend = [x + y for x, y in zip(a_levels, b_levels)]</code></pre>
       <div class="explain">
         <p>Day and night: The mask is white over the streets, so the night image (with the light trails from the cars) is kept on the roads and the day image everywhere else. The soft transition matters here because the night streets are much darker than the daytime buildings. With a hard mask, the edge of the streets would be a sharp dark outline.</p>
         <p>My favorite so far is definitely the day and night photo as it reminds me of the Flash TV show with the light beams. It's cool to see the glare of cars in the night while the rest of the scenery is in the day.</p>
-      </div>
-
-      <h3>Two portraits</h3>
-      <div class="grid">
-        <figure>
-          <img src="out/part2_4/me_matty_input_1.jpg" alt="First portrait">
-          <figcaption>
-            <span class="filename">input 1</span>
-            hair and nose
-          </figcaption>
-        </figure>
-        <figure>
-          <img src="out/part2_4/me_matty_input_2.jpg" alt="Second portrait">
-          <figcaption>
-            <span class="filename">input 2</span>
-            second face
-          </figcaption>
-        </figure>
-        <figure>
-          <img src="out/part2_4/me_matty_mask.jpg" alt="Hair and nose mask">
-          <figcaption>
-            <span class="filename">mask</span>
-            hair and nose
-          </figcaption>
-        </figure>
-      </div>
-      <figure class="single-figure result">
-        <img src="out/part2_4/me_matty_blended.jpg" alt="Portrait blend">
-        <figcaption>
-          <span class="filename">me_matty_blended.jpg</span>
-          blend
-        </figcaption>
-      </figure>
-      <div class="figure-grid">
-        <figure>
-          <img src="out/part2_4/me_matty_figure/a.jpg" alt="Portrait 1 level 0">
-          <figcaption><span class="filename">(a)</span>input 1, level 0</figcaption>
-        </figure>
-        <figure>
-          <img src="out/part2_4/me_matty_figure/b.jpg" alt="Portrait 2 level 0">
-          <figcaption><span class="filename">(b)</span>input 2, level 0</figcaption>
-        </figure>
-        <figure>
-          <img src="out/part2_4/me_matty_figure/c.jpg" alt="Portrait blend level 0">
-          <figcaption><span class="filename">(c)</span>blend, level 0</figcaption>
-        </figure>
-        <figure>
-          <img src="out/part2_4/me_matty_figure/d.jpg" alt="Portrait 1 level 2">
-          <figcaption><span class="filename">(d)</span>input 1, level 2</figcaption>
-        </figure>
-        <figure>
-          <img src="out/part2_4/me_matty_figure/e.jpg" alt="Portrait 2 level 2">
-          <figcaption><span class="filename">(e)</span>input 2, level 2</figcaption>
-        </figure>
-        <figure>
-          <img src="out/part2_4/me_matty_figure/f.jpg" alt="Portrait blend level 2">
-          <figcaption><span class="filename">(f)</span>blend, level 2</figcaption>
-        </figure>
-        <figure>
-          <img src="out/part2_4/me_matty_figure/g.jpg" alt="Portrait 1 level 4">
-          <figcaption><span class="filename">(g)</span>input 1, level 4</figcaption>
-        </figure>
-        <figure>
-          <img src="out/part2_4/me_matty_figure/h.jpg" alt="Portrait 2 level 4">
-          <figcaption><span class="filename">(h)</span>input 2, level 4</figcaption>
-        </figure>
-        <figure>
-          <img src="out/part2_4/me_matty_figure/i.jpg" alt="Portrait blend level 4">
-          <figcaption><span class="filename">(i)</span>blend, level 4</figcaption>
-        </figure>
-        <figure>
-          <img src="out/part2_4/me_matty_figure/j.jpg" alt="Portrait 1 summed">
-          <figcaption><span class="filename">(j)</span>input 1, summed</figcaption>
-        </figure>
-        <figure>
-          <img src="out/part2_4/me_matty_figure/k.jpg" alt="Portrait 2 summed">
-          <figcaption><span class="filename">(k)</span>input 2, summed</figcaption>
-        </figure>
-        <figure>
-          <img src="out/part2_4/me_matty_figure/l.jpg" alt="Portrait blend summed">
-          <figcaption><span class="filename">(l)</span>blend, summed</figcaption>
-        </figure>
-      </div>
-      <div class="explain">
-        <p>Two portraits: The mask selects my hair and nose (plus my necklace) from the first image and keeps the rest of Matty's face from the second. The two photos have similar lighting and background, so the seam disappears. The soft transition is especially important around the hair, where a hard mask would leave a cutout edge.</p>
       </div>
     </section>
 
