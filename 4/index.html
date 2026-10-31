@@ -736,6 +736,11 @@ b (18 x 1):
           <figcaption>plaza, mosaic</figcaption>
         </figure>
       </div>
+      <div class="explain">
+        <p>The 4 mosaics line up. In each one the left image stays unwarped and the right image gets stretched the farther it is from the left image, so the mosaic gets wider toward the right. This is because the right image is projected onto the plane of the left image, and a bigger rotation between the two shots means more stretch. The exam mosaic is the largest (2559 x 1756) since the lecture hall photos cover the widest view, while marble is the smallest (1549 x 1077).</p>
+        <p>For doe and marble, the photos are of flat building walls, so the windows, edges and roof line continue across the two images and the seam is hard to see. For plaza, the La Burrita sign, the benches and the lines on the ground also continue across the seam. For exam, the front wall, the screen and the chalkboards line up, but there is a slight change in brightness in the ceiling near the top edge of the left image, since the exposure was a bit different between the two shots and the ceiling is mostly one color, so the change is easier to notice there.</p>
+        <p>For the merge, the distance transform puts the seam where both images are equally far from their edges, so a pixel comes from the image it is farther inside of. The laplacian stack blends color and brightness across a wider area than the edges, so the seam is less obvious but the details do not double up.</p>
+      </div>
     </section>
   </main>
 </body>
