@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project 4A: Image Warping and Mosaicing</title>
+  <style>
+    :root {
+      --bg: #faf8f5;
+      --text: #1f1c19;
+      --muted: #6b6660;
+      --accent: #b5482c;
+      --card-bg: #ffffff;
+      --border: #e7e2da;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+
+    header {
+      padding: 60px 20px 40px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      margin: 0 0 8px;
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      color: var(--muted);
+      margin: 4px 0;
+      font-size: 1rem;
+    }
+
+    header a, .toc a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    header a:hover, .toc a:hover {
+      text-decoration: underline;
+    }
+
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 24px 40px;
+    }
+
+    section {
+      margin-bottom: 72px;
+    }
+
+    section h2 {
+      font-size: 1.5rem;
+      border-bottom: 2px solid var(--accent);
+      display: inline-block;
+      padding-bottom: 4px;
+      margin-bottom: 12px;
+    }
+
+    section h3 {
+      font-size: 1.15rem;
+      margin: 32px 0 12px;
+    }
+
+    .explain {
+      margin: 0 0 28px;
+    }
+
+    .grid + .explain,
+    .single-figure + .explain,
+    .hybrid + .explain {
+      margin-top: 28px;
+    }
+
+    .explain p {
+      margin: 0 0 14px;
+    }
+
+    .explain p:last-child {
+      margin-bottom: 0;
+    }
+
+    .explain code, p code, figcaption code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.88em;
+      word-break: break-word;
+    }
+
+    .toc {
+      margin: 8px 0 0;
+      color: var(--muted);
+    }
+
+    .eq {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 18px;
+      margin: 0 0 16px;
+      text-align: center;
+      overflow-x: auto;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+
+    figure {
+      margin: 0;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #fff;
+    }
+
+    figcaption {
+      padding: 10px 16px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .single-figure {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      max-width: 920px;
+      margin: 0 auto 20px;
+    }
+
+    .single-figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #fff;
+    }
+
+    .single-figure.narrow {
+      max-width: 420px;
+    }
+
+    .single-figure.plot {
+      max-width: 760px;
+    }
+
+    .hybrid {
+      display: grid;
+      grid-template-columns: 1.5fr 0.7fr;
+      gap: 20px;
+      margin: 0 0 28px;
+      align-items: start;
+    }
+
+    .hybrid .far {
+      max-width: 200px;
+      margin: 0 auto;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.95rem;
+      padding: 28px 24px 60px;
+      text-align: center;
+    }
+
+    @media (max-width: 700px) {
+      .grid, .grid.cols-2, .hybrid { grid-template-columns: 1fr; }
+      .hybrid .far { max-width: 180px; }
+    }
+  
+    figure a { display: block; }
+
+    .grid.closeups {
+      grid-template-columns: 1fr;
+    }
+
+    .grid.closeups img {
+      width: 100%;
+      image-rendering: pixelated;
+    }
+
+    pre.eq {
+      text-align: left;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.85rem;
+      overflow-x: auto;
+      white-space: pre;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Project 4A: Image Warping and Mosaicing</h1>
+    <p><a href="../index.html">&larr; Back to portfolio</a></p>
+  </header>
+
+  <main>
+    <div class="explain">
+      <p>The purpose of this project is to recover homographies between photographs and use them to rectify planar objects and stitch overlapping photos together into mosaics! Let’s get started!</p>
+    </div>
+    <section>
+      <h2>A1</h2>
+      <div class="explain">
+        <p>Here are the 4 sets of photographs that are projective. Here, I rotate the camera about its COP to encompass both sides of the scene.</p>
+      </div>
+      <h3>doe:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/left_doe.JPG">
+            <img src="images/left_doe.JPG" alt="doe, left (reference)">
+          </a>
+          <figcaption>doe, left (reference)</figcaption>
+        </figure>
+        <figure>
+          <a href="images/right_doe.JPG">
+            <img src="images/right_doe.JPG" alt="doe, right">
+          </a>
+          <figcaption>doe, right</figcaption>
+        </figure>
+      </div>
+      <h3>exam:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/left_exam.JPG">
+            <img src="images/left_exam.JPG" alt="exam, left (reference)">
+          </a>
+          <figcaption>exam, left (reference)</figcaption>
+        </figure>
+        <figure>
+          <a href="images/right_exam.JPG">
+            <img src="images/right_exam.JPG" alt="exam, right">
+          </a>
+          <figcaption>exam, right</figcaption>
+        </figure>
+      </div>
+      <h3>marble:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/left_marble.JPG">
+            <img src="images/left_marble.JPG" alt="marble, left (reference)">
+          </a>
+          <figcaption>marble, left (reference)</figcaption>
+        </figure>
+        <figure>
+          <a href="images/right_marble.JPG">
+            <img src="images/right_marble.JPG" alt="marble, right">
+          </a>
+          <figcaption>marble, right</figcaption>
+        </figure>
+      </div>
+      <h3>plaza:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/left_plaza.JPG">
+            <img src="images/left_plaza.JPG" alt="plaza, left (reference)">
+          </a>
+          <figcaption>plaza, left (reference)</figcaption>
+        </figure>
+        <figure>
+          <a href="images/right_plaza.JPG">
+            <img src="images/right_plaza.JPG" alt="plaza, right">
+          </a>
+          <figcaption>plaza, right</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>A2</h2>
+      <div class="explain">
+        <p>In this section, we aim to recover the parameters of the transformation between the two images. We represent this as a homography: p’ = Hp where H is a 3x3 matrix with 8 degrees of freedom, and p is a 3x1 matrix of x, y, and 1 and p’ is a 3x1 matrix of wx’, wy’, and w according to the definitions of homographic transforms. The bottom right corner of H is a scaling factor and is set equal to 1. To solve for the elements of H, we first create 3 systems of equations, resulting in ax + by + c − gxx′ − hyx′ = x′ and dx + ey + f − gxy′ − hyy′ = y′, and reformatting this in matrix forms gives the form of Ah = b with h as the column vector of H’s unknowns and b as [x’, y’]. Using this form, if we stack A to include n points (2n rows respectively with different values for x, y and x’, y’) we get in return b with 2n rows with corresponding (x’, y’) sequences. To get the values of the matrix H that is most accurate for such a transformation, we minimize ||Ah - b|| where Ah is the computed value of the transformation and b is the real second point values.</p>
+        <p>To this end, we first create two matrices, im1_pts and im2_pts, which contain n corresponding point pairs of p and p’, each with the corresponding (x, y) as row. Formatting the data, we should get the best approximation of H that matches the homographic transformation.</p>
+      </div>
+      <h3>doe:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/doe_ref_points.png">
+            <img src="images/doe_ref_points.png" alt="doe, correspondences on reference">
+          </a>
+          <figcaption>doe, correspondences on reference</figcaption>
+        </figure>
+        <figure>
+          <a href="images/doe_im_points.png">
+            <img src="images/doe_im_points.png" alt="doe, correspondences on right">
+          </a>
+          <figcaption>doe, correspondences on right</figcaption>
+        </figure>
+      </div>
+      <div class="explain">
+        <p>doe recovered H:</p>
+      </div>
+      <pre class="eq">[[ 5.32690369e-01 -3.21800029e-03  3.56873114e+02]
+ [-1.83885096e-01  8.29476364e-01  6.81540710e+01]
+ [-4.63189333e-04 -1.19488691e-05  1.00000000e+00]]</pre>
+      <div class="explain">
+        <p>doe system of equations:</p>
+      </div>
+      <pre class="eq">A (18 x 8):
+      272.74       132.62         1.00         0.00         0.00         0.00   -156951.79    -76321.17
+        0.00         0.00         0.00       272.74       132.62         1.00    -39798.15    -19352.70
+      460.92       143.87         1.00         0.00         0.00         0.00   -353866.44   -110458.40
+        0.00         0.00         0.00       460.92       143.87         1.00    -60658.18    -18934.28
+      306.49       521.26         1.00         0.00         0.00         0.00   -186717.75   -317560.72
+        0.00         0.00         0.00       306.49       521.26         1.00   -159760.68   -271713.41
+      439.44       516.15         1.00         0.00         0.00         0.00   -327490.04   -384653.23
+        0.00         0.00         0.00       439.44       516.15         1.00   -229963.61   -270103.62
+      151.03       255.35         1.00         0.00         0.00         0.00    -71159.37   -120308.64
+        0.00         0.00         0.00       151.03       255.35         1.00    -41192.83    -69644.43
+      147.97       437.40         1.00         0.00         0.00         0.00    -69259.82   -204736.93
+        0.00         0.00         0.00       147.97       437.40         1.00    -64568.62   -190869.43
+      567.28       267.62         1.00         0.00         0.00         0.00   -507467.85   -239405.77
+        0.00         0.00         0.00       567.28       267.62         1.00   -142536.57    -67243.82
+      570.35       429.22         1.00         0.00         0.00         0.00   -515462.35   -387908.76
+        0.00         0.00         0.00       570.35       429.22         1.00   -251220.73   -189054.98
+      371.94       327.97         1.00         0.00         0.00         0.00   -250178.28   -220598.07
+        0.00         0.00         0.00       371.94       327.97         1.00   -122745.48   -108232.48
+
+b (18 x 1):
+      575.47
+      145.92
+      767.74
+      131.60
+      609.22
+      521.26
+      745.24
+      523.31
+      471.15
+      272.74
+      468.08
+      436.37
+      894.56
+      251.26
+      903.76
+      440.47
+      672.63
+      330.01
+</pre>
+      <h3>exam:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/exam_ref_points.png">
+            <img src="images/exam_ref_points.png" alt="exam, correspondences on reference">
+          </a>
+          <figcaption>exam, correspondences on reference</figcaption>
+        </figure>
+        <figure>
+          <a href="images/exam_im_points.png">
+            <img src="images/exam_im_points.png" alt="exam, correspondences on right">
+          </a>
+          <figcaption>exam, correspondences on right</figcaption>
+        </figure>
+      </div>
+      <div class="explain">
+        <p>exam recovered H:</p>
+      </div>
+      <pre class="eq">[[ 3.62393251e-01 -3.01332963e-02  5.20922238e+02]
+ [-2.05578958e-01  8.37869155e-01  5.71477503e+01]
+ [-6.49035328e-04  2.51585964e-05  1.00000000e+00]]</pre>
+      <h3>marble:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/marble_ref_points.png">
+            <img src="images/marble_ref_points.png" alt="marble, correspondences on reference">
+          </a>
+          <figcaption>marble, correspondences on reference</figcaption>
+        </figure>
+        <figure>
+          <a href="images/marble_im_points.png">
+            <img src="images/marble_im_points.png" alt="marble, correspondences on right">
+          </a>
+          <figcaption>marble, correspondences on right</figcaption>
+        </figure>
+      </div>
+      <div class="explain">
+        <p>marble recovered H:</p>
+      </div>
+      <pre class="eq">[[ 5.95024114e-01  1.48535713e-02  3.01903491e+02]
+ [-1.67864480e-01  8.39789778e-01  6.86392607e+01]
+ [-4.04039590e-04 -4.62285625e-06  1.00000000e+00]]</pre>
+      <h3>plaza:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/plaza_ref_points.png">
+            <img src="images/plaza_ref_points.png" alt="plaza, correspondences on reference">
+          </a>
+          <figcaption>plaza, correspondences on reference</figcaption>
+        </figure>
+        <figure>
+          <a href="images/plaza_im_points.png">
+            <img src="images/plaza_im_points.png" alt="plaza, correspondences on right">
+          </a>
+          <figcaption>plaza, correspondences on right</figcaption>
+        </figure>
+      </div>
+      <div class="explain">
+        <p>plaza recovered H:</p>
+      </div>
+      <pre class="eq">[[ 4.37628826e-01 -2.03918148e-02  4.30719004e+02]
+ [-1.88468487e-01  8.21981705e-01  7.18298246e+01]
+ [-5.54446421e-04  1.29124057e-05  1.00000000e+00]]</pre>
+    </section>
+
+    <section>
+      <h2>A3</h2>
+      <div class="explain">
+        <p>In this section, we need to implement warping using two different interpolation styles: nearest neighbor and bilinear interpolation.</p>
+        <p>In the previous part, we calculated the matrix H that warps im1 to im2, but in this section we need to use inverse warping. The reason for this is simple. The matrix H that we calculated maps a source pixel to a destination pixel. However, if H stretches an image, neighboring pixels in our source image get pulled apart and holes remain in the gaps between them with no mapping. Similarly, if H shrinks an image, neighboring pixels can instead rewrite one another. As such, we use a technique called inverse warping that instead asks: “where in the source image is this target pixel from.” Doing this allows us to instead find out for every target pixel, what pixels in source it came from, and perform our particular interpolation program on the source image to rewrite its warped value.</p>
+        <p>One thing to note is that we use a bounding box in this section. We find in the source image, where the 4 corners map onto the target image, create a rectangle over the mapped corners and perform the inverse warping procedure to derive its new value from interpolation, and continue on.</p>
+        <p>Our project here has two types of interpolation: nearest neighbor and bilinear interpolation. Nearest neighbor interpolation simply rounds coordinates to the nearest pixel value. Bilinear interpolation on the other hand, maps the target pixel to a source position, weighs the 4 nearest pixels in all directions (its corners) and computes a weighted sum of their pixel values. The formula for this mapping is w₁₁ = (1 − x)(1 − y)</p>
+      </div>
+      <p class="eq">w₁₂ = (1 − x)y</p>
+      <p class="eq">w₂₁ = x(1 − y)</p>
+      <p class="eq">w₂₂ = xy</p>
+      <p class="eq">f(x, y) ≈ w₁₁·f(Q₁₁) + w₁₂·f(Q₁₂) + w₂₁·f(Q₂₁) + w₂₂·f(Q₂₂)</p>
+      <div class="explain">
+        <p>Finally, once we map back we do the final steps. First we compute a mask that ensures that the mapped positions are in bounds. Then we pull the RGB values of the valid points (and 4 corners if bilinear), and create a blank output image for final usage.</p>
+        <p>We can test this method on 3 different rectification images. For this process, since we don’t have an actual target image to compute from, we can arbitrarily set the value of the reference box to the size of the image we wish for it to reach, keeping the aspect ratio of the object. Doing so, we get the following output:</p>
+      </div>
+      <h3>directions:</h3>
+      <div class="grid">
+        <figure>
+          <a href="images/directions_points.png">
+            <img src="images/directions_points.png" alt="directions, clicked corners">
+          </a>
+          <figcaption>directions, clicked corners</figcaption>
+        </figure>
+        <figure>
+          <a href="images/directions_nearest.png">
+            <img src="images/directions_nearest.png" alt="directions, rectified (nearest neighbor)">
+          </a>
+          <figcaption>directions, rectified (nearest neighbor)</figcaption>
+        </figure>
+        <figure>
+          <a href="images/directions_bilinear.png">
+            <img src="images/directions_bilinear.png" alt="directions, rectified (bilinear)">
+          </a>
+          <figcaption>directions, rectified (bilinear)</figcaption>
+        </figure>
+      </div>
+      <h3>map:</h3>
+      <div class="grid">
+        <figure>
+          <a href="images/map_points.png">
+            <img src="images/map_points.png" alt="map, clicked corners">
+          </a>
+          <figcaption>map, clicked corners</figcaption>
+        </figure>
+        <figure>
+          <a href="images/map_nearest.png">
+            <img src="images/map_nearest.png" alt="map, rectified (nearest neighbor)">
+          </a>
+          <figcaption>map, rectified (nearest neighbor)</figcaption>
+        </figure>
+        <figure>
+          <a href="images/map_bilinear.png">
+            <img src="images/map_bilinear.png" alt="map, rectified (bilinear)">
+          </a>
+          <figcaption>map, rectified (bilinear)</figcaption>
+        </figure>
+      </div>
+      <h3>sign:</h3>
+      <div class="grid">
+        <figure>
+          <a href="images/sign_points.png">
+            <img src="images/sign_points.png" alt="sign, clicked corners">
+          </a>
+          <figcaption>sign, clicked corners</figcaption>
+        </figure>
+        <figure>
+          <a href="images/sign_nearest.png">
+            <img src="images/sign_nearest.png" alt="sign, rectified (nearest neighbor)">
+          </a>
+          <figcaption>sign, rectified (nearest neighbor)</figcaption>
+        </figure>
+        <figure>
+          <a href="images/sign_bilinear.png">
+            <img src="images/sign_bilinear.png" alt="sign, rectified (bilinear)">
+          </a>
+          <figcaption>sign, rectified (bilinear)</figcaption>
+        </figure>
+      </div>
+      <div class="explain">
+        <p>Comparing the two methods, we can see the difference most clearly in the close-ups of the rectified objects. In the map close-up, nearest neighbor makes the small text and the lines of the floor plan look jagged and broken, since every output pixel copies a single source pixel. Bilinear on the other hand, averages the 4 nearest pixels, so the same text and lines come out smooth, although the result looks slightly softer overall. The difference is smaller on the sign, where the letters are large, but the edges of the letters are still a bit stair-stepped with nearest neighbor.</p>
+        <p>In terms of speed, nearest neighbor is faster because it only needs one lookup per output pixel, while bilinear needs 4 lookups and a weighted sum. On our images, bilinear took about 2 to 3 times as long as nearest neighbor (for example, 0.16s vs 0.48s on the exam scene). Since both run in under a second and bilinear gives better quality, we use bilinear for the mosaics in the next section.</p>
+      </div>
+      <h3>map close-up:</h3>
+      <div class="grid cols-2 closeups">
+        <figure>
+          <a href="images/map_nearest_closeup.png">
+            <img src="images/map_nearest_closeup.png" alt="map, rectified close-up (nearest neighbor)">
+          </a>
+          <figcaption>map, rectified close-up (nearest neighbor)</figcaption>
+        </figure>
+        <figure>
+          <a href="images/map_bilinear_closeup.png">
+            <img src="images/map_bilinear_closeup.png" alt="map, rectified close-up (bilinear)">
+          </a>
+          <figcaption>map, rectified close-up (bilinear)</figcaption>
+        </figure>
+      </div>
+      <h3>sign close-up:</h3>
+      <div class="grid cols-2 closeups">
+        <figure>
+          <a href="images/sign_nearest_closeup.png">
+            <img src="images/sign_nearest_closeup.png" alt="sign, rectified close-up (nearest neighbor)">
+          </a>
+          <figcaption>sign, rectified close-up (nearest neighbor)</figcaption>
+        </figure>
+        <figure>
+          <a href="images/sign_bilinear_closeup.png">
+            <img src="images/sign_bilinear_closeup.png" alt="sign, rectified close-up (bilinear)">
+          </a>
+          <figcaption>sign, rectified close-up (bilinear)</figcaption>
+        </figure>
+      </div>
+      <h3>directions close-up:</h3>
+      <div class="grid cols-2 closeups">
+        <figure>
+          <a href="images/directions_nearest_closeup.png">
+            <img src="images/directions_nearest_closeup.png" alt="directions, rectified close-up (nearest neighbor)">
+          </a>
+          <figcaption>directions, rectified close-up (nearest neighbor)</figcaption>
+        </figure>
+        <figure>
+          <a href="images/directions_bilinear_closeup.png">
+            <img src="images/directions_bilinear_closeup.png" alt="directions, rectified close-up (bilinear)">
+          </a>
+          <figcaption>directions, rectified close-up (bilinear)</figcaption>
+        </figure>
+      </div>
+      <h3>doe:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/doe_nearest.png">
+            <img src="images/doe_nearest.png" alt="doe, nearest neighbor">
+          </a>
+          <figcaption>doe, nearest neighbor</figcaption>
+        </figure>
+        <figure>
+          <a href="images/doe_bilinear.png">
+            <img src="images/doe_bilinear.png" alt="doe, bilinear">
+          </a>
+          <figcaption>doe, bilinear</figcaption>
+        </figure>
+      </div>
+      <div class="explain">
+        <p>nearest neighbor 0.09s, bilinear 0.27s</p>
+      </div>
+      <h3>exam:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/exam_nearest.png">
+            <img src="images/exam_nearest.png" alt="exam, nearest neighbor">
+          </a>
+          <figcaption>exam, nearest neighbor</figcaption>
+        </figure>
+        <figure>
+          <a href="images/exam_bilinear.png">
+            <img src="images/exam_bilinear.png" alt="exam, bilinear">
+          </a>
+          <figcaption>exam, bilinear</figcaption>
+        </figure>
+      </div>
+      <div class="explain">
+        <p>nearest neighbor 0.16s, bilinear 0.48s</p>
+      </div>
+      <h3>marble:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/marble_nearest.png">
+            <img src="images/marble_nearest.png" alt="marble, nearest neighbor">
+          </a>
+          <figcaption>marble, nearest neighbor</figcaption>
+        </figure>
+        <figure>
+          <a href="images/marble_bilinear.png">
+            <img src="images/marble_bilinear.png" alt="marble, bilinear">
+          </a>
+          <figcaption>marble, bilinear</figcaption>
+        </figure>
+      </div>
+      <div class="explain">
+        <p>nearest neighbor 0.07s, bilinear 0.17s</p>
+      </div>
+      <h3>plaza:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/plaza_nearest.png">
+            <img src="images/plaza_nearest.png" alt="plaza, nearest neighbor">
+          </a>
+          <figcaption>plaza, nearest neighbor</figcaption>
+        </figure>
+        <figure>
+          <a href="images/plaza_bilinear.png">
+            <img src="images/plaza_bilinear.png" alt="plaza, bilinear">
+          </a>
+          <figcaption>plaza, bilinear</figcaption>
+        </figure>
+      </div>
+      <div class="explain">
+        <p>nearest neighbor 0.10s, bilinear 0.26s</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>A4</h2>
+      <div class="explain">
+        <p>In this section, we need to merge our images together to create a final mosaic. Here, I choose to keep the left image unwarped and warp the right image into its frame. The first step is to build the final canvas that contains everything by comparing the height and width of the warped image and the reference image (left is reference and right is warped). The reference image has x pixels ranging from [ref_x, ref_x + ref_w] and y pixels ranging from [ref_y, ref_y + ref_h]. Conversely, in reference image coordinates, the warped image’s x pixels range from [warped_x, warped_x + warped_w] and y pixels range from [warped_y, warped_y + warped_h]. Going by reference image coordinates, the reference image’s top left corner is in (0, 0) so ref_x, ref_y = 0. Conversely, the warped image’s top left corner in reference coordinates is (warped_x, warped_y). As such, to get the mosaic up and ready, we need to compute the values of left, right, top, and bottom such that:</p>
+      </div>
+      <p class="eq">left = min(ref_x, warped_x)</p>
+      <p class="eq">top = min(ref_y, warped_y)</p>
+      <p class="eq">right = max(ref_x + ref_w, warped_x + warped_w)</p>
+      <p class="eq">bottom = max(ref_y + ref_h, warped_y + warped_h)</p>
+      <div class="explain">
+        <p>Setting:</p>
+      </div>
+      <p class="eq">mosaic_w = right - left</p>
+      <p class="eq">mosaic_h = bottom - top</p>
+      <div class="explain">
+        <p>Now, since we can’t work with negative values, we have to shift everything so that mosaic’s top left is (0,0) now. In other words, we are shifting from reference image coordinates to mosaic coordinates. We do this by calculating:</p>
+      </div>
+      <p class="eq">ref_x, ref_y = ref_x - left, ref_y - top</p>
+      <p class="eq">warped_x, warped_y = warped_x - left, warped_y - top</p>
+      <div class="explain">
+        <p>Now, we have dimensions for our final mosaic. We then place the warped image and reference image on top of the mosaic and initiate the laplacian stack blending process. We can do this by re-referencing proj2 and creating a laplacian stack to slowly blend the two images together. Here, the reference image is a and the warped image is b in blend_levels. For the mask, we use a distance transform on each image to find how far each pixel is from that image’s edge, and set the mask to 1 where the reference image is farther from its edge than the warped image. This way, the seam is where both images are equally far from their edges.</p>
+        <p>Once we do this, we get the final mosaic that looks like:</p>
+      </div>
+      <h3>doe:</h3>
+      <div class="grid">
+        <figure>
+          <a href="images/left_doe.JPG">
+            <img src="images/left_doe.JPG" alt="doe, left (reference)">
+          </a>
+          <figcaption>doe, left (reference)</figcaption>
+        </figure>
+        <figure>
+          <a href="images/right_doe.JPG">
+            <img src="images/right_doe.JPG" alt="doe, right">
+          </a>
+          <figcaption>doe, right</figcaption>
+        </figure>
+        <figure>
+          <a href="images/doe_mosaic.png">
+            <img src="images/doe_mosaic.png" alt="doe, mosaic">
+          </a>
+          <figcaption>doe, mosaic</figcaption>
+        </figure>
+      </div>
+      <h3>exam:</h3>
+      <div class="grid">
+        <figure>
+          <a href="images/left_exam.JPG">
+            <img src="images/left_exam.JPG" alt="exam, left (reference)">
+          </a>
+          <figcaption>exam, left (reference)</figcaption>
+        </figure>
+        <figure>
+          <a href="images/right_exam.JPG">
+            <img src="images/right_exam.JPG" alt="exam, right">
+          </a>
+          <figcaption>exam, right</figcaption>
+        </figure>
+        <figure>
+          <a href="images/exam_mosaic.png">
+            <img src="images/exam_mosaic.png" alt="exam, mosaic">
+          </a>
+          <figcaption>exam, mosaic</figcaption>
+        </figure>
+      </div>
+      <h3>marble:</h3>
+      <div class="grid">
+        <figure>
+          <a href="images/left_marble.JPG">
+            <img src="images/left_marble.JPG" alt="marble, left (reference)">
+          </a>
+          <figcaption>marble, left (reference)</figcaption>
+        </figure>
+        <figure>
+          <a href="images/right_marble.JPG">
+            <img src="images/right_marble.JPG" alt="marble, right">
+          </a>
+          <figcaption>marble, right</figcaption>
+        </figure>
+        <figure>
+          <a href="images/marble_mosaic.png">
+            <img src="images/marble_mosaic.png" alt="marble, mosaic">
+          </a>
+          <figcaption>marble, mosaic</figcaption>
+        </figure>
+      </div>
+      <h3>plaza:</h3>
+      <div class="grid">
+        <figure>
+          <a href="images/left_plaza.JPG">
+            <img src="images/left_plaza.JPG" alt="plaza, left (reference)">
+          </a>
+          <figcaption>plaza, left (reference)</figcaption>
+        </figure>
+        <figure>
+          <a href="images/right_plaza.JPG">
+            <img src="images/right_plaza.JPG" alt="plaza, right">
+          </a>
+          <figcaption>plaza, right</figcaption>
+        </figure>
+        <figure>
+          <a href="images/plaza_mosaic.png">
+            <img src="images/plaza_mosaic.png" alt="plaza, mosaic">
+          </a>
+          <figcaption>plaza, mosaic</figcaption>
+        </figure>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
