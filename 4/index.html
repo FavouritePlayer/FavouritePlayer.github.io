@@ -742,6 +742,252 @@ b (18 x 1):
         <p>For the merge, the distance transform puts the seam where both images are equally far from their edges, so a pixel comes from the image it is farther inside of. The laplacian stack blends color and brightness across a wider area than the edges, so the seam is less obvious but the details do not double up.</p>
       </div>
     </section>
+
+    <section>
+      <h2>B.1</h2>
+      <div class="explain">
+        <p>In this section we are performing the adaptive non-maximal suppression algorithm. So what exactly motivates this algorithm? When we have numerous Harris Corners, we don’t want our set of matching features to be too overpopulated in specific areas (such as certain textures, grasping more corners). As such, the concept of ANMS is to maintain only the set of Harris corners with large suppression radii. In other words, we pick (in this case the top 500) corners whose harmonic mean of eigenvalues is more robust than all others in their neighborhood and select the interest features for which the minimum radius to a stronger corner (f(xi) &lt; c * f(xj)) is the largest. In this manner, we get Harris corners that are more spread out and more defining of the image itself. Implementing this through a mask and vector algebra, we get the following images: one before ANMS and another after.</p>
+      </div>
+      <h3>doe:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/doe_harris_all.png">
+            <img src="images/doe_harris_all.png" alt="doe, without ANMS">
+          </a>
+          <figcaption>doe, without ANMS</figcaption>
+        </figure>
+        <figure>
+          <a href="images/doe_harris_anms.png">
+            <img src="images/doe_harris_anms.png" alt="doe, with ANMS (500 corners)">
+          </a>
+          <figcaption>doe, with ANMS (500 corners)</figcaption>
+        </figure>
+      </div>
+      <h3>exam:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/exam_harris_all.png">
+            <img src="images/exam_harris_all.png" alt="exam, without ANMS">
+          </a>
+          <figcaption>exam, without ANMS</figcaption>
+        </figure>
+        <figure>
+          <a href="images/exam_harris_anms.png">
+            <img src="images/exam_harris_anms.png" alt="exam, with ANMS (500 corners)">
+          </a>
+          <figcaption>exam, with ANMS (500 corners)</figcaption>
+        </figure>
+      </div>
+      <h3>marble:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/marble_harris_all.png">
+            <img src="images/marble_harris_all.png" alt="marble, without ANMS">
+          </a>
+          <figcaption>marble, without ANMS</figcaption>
+        </figure>
+        <figure>
+          <a href="images/marble_harris_anms.png">
+            <img src="images/marble_harris_anms.png" alt="marble, with ANMS (500 corners)">
+          </a>
+          <figcaption>marble, with ANMS (500 corners)</figcaption>
+        </figure>
+      </div>
+      <h3>plaza:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/plaza_harris_all.png">
+            <img src="images/plaza_harris_all.png" alt="plaza, without ANMS">
+          </a>
+          <figcaption>plaza, without ANMS</figcaption>
+        </figure>
+        <figure>
+          <a href="images/plaza_harris_anms.png">
+            <img src="images/plaza_harris_anms.png" alt="plaza, with ANMS (500 corners)">
+          </a>
+          <figcaption>plaza, with ANMS (500 corners)</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>B.2</h2>
+      <div class="explain">
+        <p>In this section, we wish to perform feature extraction. To that end, using the interest points detected earlier with ANMS, centered on each interest point, we take a 40x40 window surrounding the pixel. From there, we utilize a Gaussian blur, which allows for the resulting patch to have more similar values to one another, and sample every 5th pixel in every direction in order to obtain a more representative 8x8 pixel patch. From there, we bias/gain normalize the patch and prepare the descriptor for comparison later.</p>
+      </div>
+      <div class="grid" style="grid-template-columns: repeat(5, 160px);">
+        <figure>
+          <a href="images/doe_descriptor_0.png">
+            <img src="images/doe_descriptor_0.png" alt="doe, descriptor 0" width="160" style="image-rendering: pixelated">
+          </a>
+          <figcaption>doe, descriptor 0</figcaption>
+        </figure>
+        <figure>
+          <a href="images/doe_descriptor_100.png">
+            <img src="images/doe_descriptor_100.png" alt="doe, descriptor 100" width="160" style="image-rendering: pixelated">
+          </a>
+          <figcaption>doe, descriptor 100</figcaption>
+        </figure>
+        <figure>
+          <a href="images/doe_descriptor_200.png">
+            <img src="images/doe_descriptor_200.png" alt="doe, descriptor 200" width="160" style="image-rendering: pixelated">
+          </a>
+          <figcaption>doe, descriptor 200</figcaption>
+        </figure>
+        <figure>
+          <a href="images/doe_descriptor_300.png">
+            <img src="images/doe_descriptor_300.png" alt="doe, descriptor 300" width="160" style="image-rendering: pixelated">
+          </a>
+          <figcaption>doe, descriptor 300</figcaption>
+        </figure>
+        <figure>
+          <a href="images/doe_descriptor_400.png">
+            <img src="images/doe_descriptor_400.png" alt="doe, descriptor 400" width="160" style="image-rendering: pixelated">
+          </a>
+          <figcaption>doe, descriptor 400</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>B.3</h2>
+      <div class="explain">
+        <p>In this section, we have matched the descriptors extracted in the previous step. To this end, we use a method called thresholding (by Lowe), where we compare the ratio between the error of the best nearest neighbor and the error of the second best nearest neighbor. Using the descriptors from the feature extraction function defined earlier, we can compute the differences between two sets of descriptors and compare the errors between them such that only features whose error ratio is below a certain threshold are matched.</p>
+      </div>
+      <div class="explain">
+        <p>[INSERT THRESHOLD VALUE USED AND WHY, REFERENCING FIGURE 6B]</p>
+      </div>
+      <h3>doe:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/doe_matches_ref.png">
+            <img src="images/doe_matches_ref.png" alt="doe, left (reference)">
+          </a>
+          <figcaption>doe, left (reference)</figcaption>
+        </figure>
+        <figure>
+          <a href="images/doe_matches_im.png">
+            <img src="images/doe_matches_im.png" alt="doe, right">
+          </a>
+          <figcaption>doe, right</figcaption>
+        </figure>
+      </div>
+      <h3>exam:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/exam_matches_ref.png">
+            <img src="images/exam_matches_ref.png" alt="exam, left (reference)">
+          </a>
+          <figcaption>exam, left (reference)</figcaption>
+        </figure>
+        <figure>
+          <a href="images/exam_matches_im.png">
+            <img src="images/exam_matches_im.png" alt="exam, right">
+          </a>
+          <figcaption>exam, right</figcaption>
+        </figure>
+      </div>
+      <h3>marble:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/marble_matches_ref.png">
+            <img src="images/marble_matches_ref.png" alt="marble, left (reference)">
+          </a>
+          <figcaption>marble, left (reference)</figcaption>
+        </figure>
+        <figure>
+          <a href="images/marble_matches_im.png">
+            <img src="images/marble_matches_im.png" alt="marble, right">
+          </a>
+          <figcaption>marble, right</figcaption>
+        </figure>
+      </div>
+      <h3>plaza:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/plaza_matches_ref.png">
+            <img src="images/plaza_matches_ref.png" alt="plaza, left (reference)">
+          </a>
+          <figcaption>plaza, left (reference)</figcaption>
+        </figure>
+        <figure>
+          <a href="images/plaza_matches_im.png">
+            <img src="images/plaza_matches_im.png" alt="plaza, right">
+          </a>
+          <figcaption>plaza, right</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>B.4</h2>
+      <div class="explain">
+        <p>In this section we now use the RANSAC algorithm to compute a robust homography that utilizes the rough feature matching process in the previous part. The algorithm is simple. We first pick 4 random matches from our computed matched descriptors. Using our part A’s computeH, we compute a homography and calculate the error between the changed image’s matched and morphed interest points. Using this, we calculate the number of “inliers,” which is defined as a point such that the difference between the morphed and matched points is a small value epsilon (which is generally 1-3 pixels). From there, after repeating this process, we select the homography that creates the greatest amount of inliers and recompute the homography using only the inliers instead of the original best 4 point pairs.</p>
+      </div>
+      <h3>doe:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/doe_mosaic.png">
+            <img src="images/doe_mosaic.png" alt="doe, manual">
+          </a>
+          <figcaption>doe, manual</figcaption>
+        </figure>
+        <figure>
+          <a href="images/doe_auto_mosaic.png">
+            <img src="images/doe_auto_mosaic.png" alt="doe, automatic">
+          </a>
+          <figcaption>doe, automatic</figcaption>
+        </figure>
+      </div>
+      <h3>exam:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/exam_mosaic.png">
+            <img src="images/exam_mosaic.png" alt="exam, manual">
+          </a>
+          <figcaption>exam, manual</figcaption>
+        </figure>
+        <figure>
+          <a href="images/exam_auto_mosaic.png">
+            <img src="images/exam_auto_mosaic.png" alt="exam, automatic">
+          </a>
+          <figcaption>exam, automatic</figcaption>
+        </figure>
+      </div>
+      <h3>marble:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/marble_mosaic.png">
+            <img src="images/marble_mosaic.png" alt="marble, manual">
+          </a>
+          <figcaption>marble, manual</figcaption>
+        </figure>
+        <figure>
+          <a href="images/marble_auto_mosaic.png">
+            <img src="images/marble_auto_mosaic.png" alt="marble, automatic">
+          </a>
+          <figcaption>marble, automatic</figcaption>
+        </figure>
+      </div>
+      <h3>plaza:</h3>
+      <div class="grid cols-2">
+        <figure>
+          <a href="images/plaza_mosaic.png">
+            <img src="images/plaza_mosaic.png" alt="plaza, manual">
+          </a>
+          <figcaption>plaza, manual</figcaption>
+        </figure>
+        <figure>
+          <a href="images/plaza_auto_mosaic.png">
+            <img src="images/plaza_auto_mosaic.png" alt="plaza, automatic">
+          </a>
+          <figcaption>plaza, automatic</figcaption>
+        </figure>
+      </div>
+      <div class="explain">
+        <p>[INSERT COMPARISON OF MANUAL VS AUTOMATIC STITCHING]</p>
+      </div>
+    </section>
   </main>
 </body>
 </html>
