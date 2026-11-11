@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Project 4A: Image Warping and Mosaicing</title>
+  <title>Project 4: Image Warping and Mosaicing</title>
   <style>
     :root {
       --bg: #faf8f5;
@@ -217,7 +217,7 @@
 </head>
 <body>
   <header>
-    <h1>Project 4A: Image Warping and Mosaicing</h1>
+    <h1>Project 4: Image Warping and Mosaicing</h1>
     <p><a href="../index.html">&larr; Back to portfolio</a></p>
   </header>
 
@@ -295,7 +295,7 @@
     <section>
       <h2>A2</h2>
       <div class="explain">
-        <p>In this section, we aim to recover the parameters of the transformation between the two images. We represent this as a homography: p’ = Hp where H is a 3x3 matrix with 8 degrees of freedom, and p is a 3x1 matrix of x, y, and 1 and p’ is a 3x1 matrix of wx’, wy’, and w according to the definitions of homographic transforms. The bottom right corner of H is a scaling factor and is set equal to 1. To solve for the elements of H, we first create 3 systems of equations, resulting in ax + by + c − gxx′ − hyx′ = x′ and dx + ey + f − gxy′ − hyy′ = y′, and reformatting this in matrix forms gives the form of Ah = b with h as the column vector of H’s unknowns and b as [x’, y’]. Using this form, if we stack A to include n points (2n rows respectively with different values for x, y and x’, y’) we get in return b with 2n rows with corresponding (x’, y’) sequences. To get the values of the matrix H that is most accurate for such a transformation, we minimize ||Ah - b|| where Ah is the computed value of the transformation and b is the real second point values.</p>
+        <p>In this section, we aim to recover the parameters of the transformation between the two images. We represent this as a homography: p’ = Hp where H is a 3x3 matrix with 8 degrees of freedom, and p is a 3x1 matrix of x, y, and 1 and p’ is a 3x1 matrix of wx’, wy’, and w according to the definitions of homographic transforms. The bottom right corner of H is a scaling factor and is set equal to 1. To solve for the elements of H, we first create 3 equations, resulting in ax + by + c − gxx′ − hyx′ = x′ and dx + ey + f − gxy′ − hyy′ = y′, and reformatting this in matrix forms gives the form of Ah = b with h as the column vector of H’s unknowns and b as [x’, y’]. Using this form, if we stack A to include n points (2n rows respectively with different values for x, y and x’, y’) we get in return b with 2n rows with corresponding (x’, y’) sequences. To get the values of the matrix H that is most accurate for such a transformation, we minimize ||Ah - b|| where Ah is the computed value of the transformation and b is the real second point values.</p>
         <p>To this end, we first create two matrices, im1_pts and im2_pts, which contain n corresponding point pairs of p and p’, each with the corresponding (x, y) as row. Formatting the data, we should get the best approximation of H that matches the homographic transformation.</p>
       </div>
       <h3>doe:</h3>
@@ -855,7 +855,7 @@ b (18 x 1):
         <p>In this section, we have matched the descriptors extracted in the previous step. To this end, we use a method called thresholding (by Lowe), where we compare the ratio between the error of the best nearest neighbor and the error of the second best nearest neighbor. Using the descriptors from the feature extraction function defined earlier, we can compute the differences between two sets of descriptors and compare the errors between them such that only features whose error ratio is below a certain threshold are matched.</p>
       </div>
       <div class="explain">
-        <p>[INSERT THRESHOLD VALUE USED AND WHY, REFERENCING FIGURE 6B]</p>
+        <p>We set the ratio threshold to 0.5. Figure 6b plots the closest neighbor error divided by the second closest, and the correct matches sit at low ratios while the wrong ones pile up near 1. 0.5 is in the middle of that, so most of the good matches stay and a lot of the bad ones go. A higher cutoff kept pairs that were clearly wrong, and a lower one did not leave enough points for RANSAC. One that still gets through is match 36 on doe, on the roof in the left image and on the grass in the right. RANSAC drops those in the next part.</p>
       </div>
       <h3>doe:</h3>
       <div class="grid cols-2">
@@ -985,7 +985,7 @@ b (18 x 1):
         </figure>
       </div>
       <div class="explain">
-        <p>[INSERT COMPARISON OF MANUAL VS AUTOMATIC STITCHING]</p>
+        <p>We run RANSAC for 2000 iterations and count a point as an inlier if it lands under 3 pixels away. The manual and automatic mosaics come out as pretty much the same picture, and the seams still line up when you zoom in. The canvas sizes come out different. Exam goes from 2559 x 1756 by hand to 2485 x 1659 automatic, and plaza, marble and doe only move by a few dozen pixels. The H is a little different once you get far from the overlap, so the right image gets stretched by a different amount. The exam ceiling is still brighter on one side in both, which was already there because the two photos have different exposure. We also did not have to click any points for the automatic one.</p>
       </div>
     </section>
   </main>
